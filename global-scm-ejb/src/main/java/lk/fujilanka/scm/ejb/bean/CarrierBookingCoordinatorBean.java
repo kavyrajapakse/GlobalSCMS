@@ -1,17 +1,21 @@
 package lk.fujilanka.scm.ejb.bean;
 
 import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionManagement;
 import jakarta.ejb.TransactionManagementType;
+import jakarta.interceptor.Interceptors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.UserTransaction;
 import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.Shipment;
+import lk.fujilanka.scm.ejb.interceptor.AuditLoggingInterceptor;
 import lk.fujilanka.scm.ejb.local.CarrierBookingCoordinatorLocal;
 
 @Stateless
+@Interceptors(AuditLoggingInterceptor.class)
 @TransactionManagement(TransactionManagementType.BEAN)
 public class CarrierBookingCoordinatorBean implements CarrierBookingCoordinatorLocal {
 
@@ -19,10 +23,11 @@ public class CarrierBookingCoordinatorBean implements CarrierBookingCoordinatorL
     private EntityManager em;
 
     @Resource
-    private UserTransaction userTransaction;
+    private SessionContext sessionContext;
 
     @Override
     public boolean processCarrierBooking(Long shipmentId, String carrierCode, double costUSD, String username) {
+        UserTransaction userTransaction = sessionContext.getUserTransaction();
         try {
             // Programmatically BEGIN JTA Transaction (BMT)
             userTransaction.begin();

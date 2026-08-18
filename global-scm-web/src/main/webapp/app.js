@@ -25,7 +25,23 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             const data = await response.json();
             localStorage.setItem('scm_jwt', data.token);
             localStorage.setItem('scm_username', data.username);
-            window.location.href = 'dashboard.jsp';
+            localStorage.setItem('scm_roles', JSON.stringify(data.roles));
+
+            // Role-Based Automatic Routing
+            const roles = data.roles || [];
+            if (roles.includes('ADMIN')) {
+                window.location.href = 'dashboard.jsp';
+            } else if (roles.includes('CUSTOMS_AGENT')) {
+                window.location.href = 'customs.jsp';
+            } else if (roles.includes('WAREHOUSE_MANAGER')) {
+                window.location.href = 'inventory.jsp';
+            } else if (roles.includes('COORDINATOR')) {
+                window.location.href = 'shipments.jsp';
+            } else if (roles.includes('VENDOR_REP')) {
+                window.location.href = 'vendor.jsp';
+            } else {
+                window.location.href = 'dashboard.jsp';
+            }
         } else {
             const errText = await response.text();
             errorBox.innerText = errText || 'Authentication failed. Invalid username or password.';

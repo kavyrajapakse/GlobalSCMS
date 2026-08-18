@@ -3,17 +3,20 @@ package lk.fujilanka.scm.ejb.bean;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.interceptor.Interceptors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.Shipment;
 import lk.fujilanka.scm.core.entity.User;
+import lk.fujilanka.scm.ejb.interceptor.AuditLoggingInterceptor;
 import lk.fujilanka.scm.ejb.local.ShipmentServiceLocal;
 
 import java.util.List;
 
 @Stateless
+@Interceptors(AuditLoggingInterceptor.class)
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ShipmentServiceBean implements ShipmentServiceLocal {
 
