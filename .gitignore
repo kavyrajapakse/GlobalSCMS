@@ -1,0 +1,35 @@
+# Maven build output directories
+target/
+**/target/
+
+# IDE files (IntelliJ IDEA, Eclipse, NetBeans)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+**/out/
+.settings/
+.project
+.classpath
+.factorypath
+nbproject/private/
+nbbuild/
+dist/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and runtime artifacts
+*.log
+payara-logs/
+server.log
+
+# Environment & Sensitive Credentials
+*.env
+*.pem
+*.key
+credentials.json
+secret.properties

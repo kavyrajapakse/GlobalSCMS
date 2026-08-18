@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>lk.fujilanka.scm</groupId>
+    <artifactId>GlobalSCMS</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>global-scm-core</module>
+        <module>global-scm-ejb</module>
+        <module>global-scm-web</module>
+        <module>global-scm-ear</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jakartaee.version>10.0.0</jakartaee.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Jakarta EE 10 API (Provided by Payara 6) -->
+            <dependency>
+                <groupId>jakarta.platform</groupId>
+                <artifactId>jakarta.jakartaee-api</artifactId>
+                <version>${jakartaee.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- Arquillian BOM -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>1.7.0.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Shared Modules -->
+            <dependency>
+                <groupId>lk.fujilanka.scm.core</groupId>
+                <artifactId>global-scm-core</artifactId>
+                <version>1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>lk.fujilanka.scm.ejb</groupId>
+                <artifactId>global-scm-ejb</artifactId>
+                <version>1.0</version>
+                <type>ejb</type>
+            </dependency>
+            <dependency>
+                <groupId>lk.fujilanka.scm.web</groupId>
+                <artifactId>global-scm-web</artifactId>
+                <version>1.0</version>
+                <type>war</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

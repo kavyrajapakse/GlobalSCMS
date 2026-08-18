@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>lk.fujilanka.scm</groupId>
+        <artifactId>GlobalSCMS</artifactId>
+        <version>1.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>lk.fujilanka.scm.web</groupId>
+    <artifactId>global-scm-web</artifactId>
+    <packaging>war</packaging>
+
+    <dependencies>
+        <!-- Jakarta EE API -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+        <!-- Shared Core Module -->
+        <dependency>
+            <groupId>lk.fujilanka.scm.core</groupId>
+            <artifactId>global-scm-core</artifactId>
+        </dependency>
+        <!-- EJB dependency (provided by the EAR container at runtime) -->
+        <dependency>
+            <groupId>lk.fujilanka.scm.ejb</groupId>
+            <artifactId>global-scm-ejb</artifactId>
+            <type>ejb</type>
+            <scope>provided</scope>
+        </dependency>
+        <!-- JWT Library for Token Verification -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>4.6.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

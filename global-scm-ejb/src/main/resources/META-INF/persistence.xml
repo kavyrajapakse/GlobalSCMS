@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             version="3.0">
+
+    <persistence-unit name="SCMPU" transaction-type="JTA">
+
+        <jta-data-source>jdbc/SCMDS</jta-data-source>
+
+        <class>lk.fujilanka.scm.core.entity.Role</class>
+        <class>lk.fujilanka.scm.core.entity.User</class>
+        <class>lk.fujilanka.scm.core.entity.Warehouse</class>
+        <class>lk.fujilanka.scm.core.entity.InventoryItem</class>
+        <class>lk.fujilanka.scm.core.entity.Shipment</class>
+        <class>lk.fujilanka.scm.core.entity.CustomsFiling</class>
+        <class>lk.fujilanka.scm.core.entity.AuditLog</class>
+
+        <properties>
+            <!-- Preserve existing database tables and records across redeployments -->
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+
+            <!-- OPTIMIZATION 1: JDBC Batching (Batches Order Items together instead of inserting one-by-one) -->
+            <property name="hibernate.jdbc.batch_size" value="30"/>
+            <property name="hibernate.order_inserts" value="true"/>
+            <property name="hibernate.order_updates" value="true"/>
+
+            <!-- OPTIMIZATION 2: SQL Logging -->
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+
+            <!-- OPTIMIZATION 3: Fetch size tuning to prevent memory overhead on large queries -->
+            <property name="hibernate.jdbc.fetch_size" value="100"/>
+        </properties>
+
+    </persistence-unit>
+
+</persistence>

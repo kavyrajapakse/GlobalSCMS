@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>lk.fujilanka.scm</groupId>
+        <artifactId>GlobalSCMS</artifactId>
+        <version>1.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>lk.fujilanka.scm.ejb</groupId>
+    <artifactId>global-scm-ejb</artifactId>
+    <packaging>ejb</packaging>
+
+    <dependencies>
+        <!-- Jakarta EE API -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+        <!-- Shared Core Module -->
+        <dependency>
+            <groupId>lk.fujilanka.scm.core</groupId>
+            <artifactId>global-scm-core</artifactId>
+        </dependency>
+        <!-- JWT Library for Token Operations -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>4.6.0</version>
+        </dependency>
+        <!-- Hibernate ORM Provider -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>6.4.4.Final</version>
+        </dependency>
+        <!-- JUnit 5 Testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Arquillian JUnit 5 Integration -->
+        <dependency>
+            <groupId>org.jboss.arquillian.junit5</groupId>
+            <artifactId>arquillian-junit5-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Shrinkwrap Maven Resolver -->
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Payara Managed Container Adapter -->
+        <dependency>
+            <groupId>fish.payara.arquillian</groupId>
+            <artifactId>arquillian-payara-server-managed</artifactId>
+            <version>3.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ejb-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <ejbVersion>3.2</ejbVersion>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

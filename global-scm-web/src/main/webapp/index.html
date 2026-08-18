@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlobalTrade SCM Portal | Enterprise Logistics & Security</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-surface: #0f172a;
+            --bg-card: #1e293b;
+            --bg-light: #f8fafc;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #2563eb;
+            --brand-accent: #38bdf8;
+            --brand-glow: rgba(37, 99, 235, 0.25);
+            --success: #10b981;
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --border-dark: #334155;
+            --border-light: #e2e8f0;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); min-height: 100vh; }
+
+        #auth-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.15), transparent 45%), var(--bg-dark); }
+        .auth-grid { display: grid; grid-template-columns: 1.1fr 1fr; width: 100%; max-width: 1180px; min-height: 680px; margin: 24px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; }
+
+        .auth-hero { padding: 48px; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%); border-right: 1px solid var(--border-dark); }
+        .hero-brand { display: flex; align-items: center; gap: 12px; }
+        .brand-logo { width: 42px; height: 42px; background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; }
+        .form-header p {
+            color: #94a3b8;       /* Ash / Muted Slate Color */
+            font-size: 12px;       /* Smaller font size */
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .brand-name { font-size: 20px; font-weight: 800; }
+        .hero-tag { display: inline-block; padding: 4px 12px; background: rgba(37, 99, 235, 0.15); color: var(--brand-accent); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 20px; }
+        .hero-content h1 { font-size: 36px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
+        .hero-content p { color: var(--text-secondary); font-size: 15px; line-height: 1.6; }
+
+        .auth-form-panel { padding: 48px; display: flex; align-items: center; justify-content: center; background: var(--bg-surface); }
+        .form-container { width: 100%; max-width: 380px; }
+
+        /* Auth Mode Switcher Tabs */
+        .auth-tabs { display: flex; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-dark); border-radius: var(--radius-md); padding: 4px; margin-bottom: 24px; }
+        .auth-tab { flex: 1; padding: 8px 12px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; font-size: 13px; cursor: pointer; border-radius: var(--radius-sm); transition: var(--transition); }
+        .auth-tab.active { background: var(--brand-primary); color: white; }
+
+        .demo-selector { margin-bottom: 24px; padding: 14px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-dark); border-radius: var(--radius-md); }
+        .demo-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+        .demo-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-dark); padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .chip:hover { background: var(--brand-primary); color: white; }
+
+        .input-group { margin-bottom: 18px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper input, .input-wrapper select { width: 100%; padding: 12px 14px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-dark); border-radius: var(--radius-md); color: white; font-family: inherit; font-size: 14px; }
+        .input-wrapper select { cursor: pointer; }
+
+        .btn-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--brand-primary), #1d4ed8); color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: var(--transition); }
+        .btn-submit:hover { transform: translateY(-1px); }
+        .error-banner { margin-top: 16px; padding: 12px; background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-sm); color: #fca5a5; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-wrapper">
+        <div class="auth-grid">
+            <!-- Left Hero Panel -->
+            <div class="auth-hero">
+                <div class="hero-brand">
+                    <div class="brand-logo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7L12 12L22 7L12 2Z"/><path d="M2 17L12 22L22 17"/><path d="M2 12L12 17L22 12"/></svg>
+                    </div>
+                    <span class="brand-name">GlobalTrade SCM</span>
+                </div>
+
+                <div class="hero-content">
+                    <span class="hero-tag">ENTERPRISE PLATFORM v2.5</span>
+                    <h1>Global Logistics & Autonomous Supply Chain Control.</h1>
+                    <p>Backed by Hibernate JPA, EJB Timers, JTA Transactions, and JAAS Security Frameworks linked to MySQL.</p>
+                </div>
+
+                <div style="font-size: 13px; color: var(--text-muted);">Powered by Payara 6 • MySQL Database</div>
+            </div>
+
+            <!-- Right Form Panel -->
+            <div class="auth-form-panel">
+                <div class="form-container">
+                    <!-- Auth Mode Tabs -->
+                    <div class="auth-tabs">
+                        <button type="button" id="tab-login" class="auth-tab active" onclick="switchAuthMode('login')">Sign In</button>
+                        <button type="button" id="tab-register" class="auth-tab" onclick="switchAuthMode('register')">Register Account</button>
+                    </div>
+
+                    <div class="form-header">
+                        <h2 id="form-title">Welcome back</h2>
+                        <p id="form-desc">Authenticate with SCMRealm to access protected supply chain modules.</p>
+                    </div>
+
+                    <!-- Quick Demo Credentials Selector (Login Mode) -->
+                    <div id="demo-section" class="demo-selector">
+                        <span class="demo-label">Quick Demo Logins:</span>
+                        <div class="demo-chips">
+                            <button type="button" class="chip" onclick="fillCredentials('admin', 'admin123')">Admin</button>
+                            <button type="button" class="chip" onclick="fillCredentials('coordinator', 'pass123')">Coordinator</button>
+                            <button type="button" class="chip" onclick="fillCredentials('customs', 'pass123')">Customs</button>
+                            <button type="button" class="chip" onclick="fillCredentials('warehouse', 'pass123')">Warehouse</button>
+                        </div>
+                    </div>
+
+                    <form id="auth-form">
+                        <div class="input-group">
+                            <label for="username">Username</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="username" required placeholder="Enter username">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="password">Password</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="password" required placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <!-- Role Selector (Register Mode) -->
+                        <div class="input-group" id="role-group" style="display: none;">
+                            <label for="role-select">Primary Security Role</label>
+                            <div class="input-wrapper">
+                                <select id="role-select">
+                                    <option value="COORDINATOR">COORDINATOR (Logistics Manager)</option>
+                                    <option value="CUSTOMS_AGENT">CUSTOMS_AGENT (Customs Compliance)</option>
+                                    <option value="WAREHOUSE_MANAGER">WAREHOUSE_MANAGER (Inventory Control)</option>
+                                    <option value="VENDOR_REP">VENDOR_REP (Supplier Portal)</option>
+                                    <option value="ADMIN">ADMIN (System Administrator)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="btn-submit">
+                            <span id="submit-label">Authenticate (JAAS Login)</span>
+                        </button>
+                    </form>
+
+                    <div id="auth-error" class="error-banner" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
