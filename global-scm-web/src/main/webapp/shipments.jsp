@@ -69,7 +69,7 @@
         .stat-value { font-size: 26px; font-weight: 800; color: white; margin: 8px 0 4px; }
         .stat-sub { font-size: 12px; color: var(--text-secondary); }
 
-        /* Status Distribution & EJB Timer Card */
+        /* Status Distribution & Automated Tracking Card */
         .top-row-cards { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
         .analytics-card { background: rgba(15, 23, 42, 0.75); border: 1px solid var(--border-dark); border-radius: var(--radius-md); padding: 20px; }
         .analytics-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; display: flex; justify-content: space-between; }
@@ -158,7 +158,7 @@
         <div class="page-header">
             <div>
                 <h1>Logistics Operations & Freight Management</h1>
-                <p>Manage ocean cargo dispatches, carrier bookings, and vessel manifests.</p>
+                <p>Manage ocean cargo dispatches, carrier capacity bookings, and vessel manifests.</p>
             </div>
             <button class="btn-action-primary" onclick="openCreateModal()">+ Create New Cargo Shipment</button>
         </div>
@@ -166,11 +166,11 @@
         <!-- Sub-Feature Navigation Tabs -->
         <div class="sub-tabs">
             <button class="tab-btn active" onclick="switchTab('overview-manifest-tab', this)">📊 Operations & Live Manifests</button>
-            <button class="tab-btn" onclick="switchTab('booking-tab', this)">🚢 Carrier Booking (BMT)</button>
+            <button class="tab-btn" onclick="switchTab('booking-tab', this)">🚢 Carrier Capacity Booking</button>
             <button class="tab-btn" onclick="switchTab('alerts-tab', this)">🔔 Dispatch Alerts</button>
         </div>
 
-        <!-- Combined Primary Tab: Overview Cards + Status Bar + EJB Timer Card + Live Manifests Table -->
+        <!-- Combined Primary Tab: Overview Cards + Status Bar + Automated Tracking Card + Live Manifests Table -->
         <div id="overview-manifest-tab" class="tab-content active">
             
             <!-- Top Metric Cards -->
@@ -202,7 +202,7 @@
                 </div>
             </div>
 
-            <!-- Status Distribution Analytics Bar & EJB Timer Card -->
+            <!-- Status Distribution Analytics Bar & Automated Tracking Monitor Card -->
             <div class="top-row-cards">
                 <div class="analytics-card">
                     <div class="analytics-title">
@@ -216,18 +216,18 @@
                     </div>
                 </div>
 
-                <!-- EJB Automated Timer Status Card -->
+                <!-- Automated Tracking Telemetry Card -->
                 <div class="timer-card">
-                    <div style="font-size: 12px; font-weight: 700; color: var(--brand-accent); text-transform: uppercase; margin-bottom: 6px;">⏱️ EJB Automated Tracking Timer</div>
-                    <div style="font-size: 13px; color: var(--text-secondary);">Frequency: <strong style="color: white;">Every 5 Mins (@Schedule)</strong></div>
-                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Status: <span style="color: var(--success); font-weight: 700;">● ACTIVE (Background)</span></div>
+                    <div style="font-size: 12px; font-weight: 700; color: var(--brand-accent); text-transform: uppercase; margin-bottom: 6px;">⏱️ Automated Tracking Service</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">Frequency: <strong style="color: white;">Every 5 Minutes (Automated)</strong></div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Status: <span style="color: var(--success); font-weight: 700;">● Active Telemetry Stream</span></div>
                 </div>
             </div>
 
             <!-- Live Manifests Table with Row Action Buttons -->
             <div class="panel">
-                <h3>Live Freight Manifests</h3>
-                <p class="panel-desc">Real-time international cargo manifests fetched from MySQL database.</p>
+                <h3>Live Cargo Manifests</h3>
+                <p class="panel-desc">Real-time international cargo manifests synchronized with primary database records.</p>
                 
                 <table>
                     <thead>
@@ -249,11 +249,11 @@
             </div>
         </div>
 
-        <!-- Tab 2: Carrier Booking (BMT) -->
+        <!-- Tab 2: Carrier Capacity Booking -->
         <div id="booking-tab" class="tab-content">
             <div class="panel" style="max-width: 600px;">
-                <h3>🚢 Carrier Container Booking</h3>
-                <p class="panel-desc">Reserve container allocations with ocean freight carriers (Triggers JTA BMT Transaction).</p>
+                <h3>🚢 Ocean Carrier Capacity Allocation</h3>
+                <p class="panel-desc">Reserve container capacity and manage ocean freight booking allocations.</p>
 
                 <form id="bmt-booking-form">
                     <div class="form-group">
@@ -271,18 +271,18 @@
                         <input type="number" id="cost-usd" value="2500000" required>
                     </div>
 
-                    <button type="submit" class="btn-submit">Reserve Container (BMT Commit)</button>
+                    <button type="submit" class="btn-submit">Reserve Carrier Container</button>
                 </form>
 
                 <div id="bmt-response" class="response-banner"></div>
             </div>
         </div>
 
-        <!-- Tab 3: Live Dispatch Alerts from Backend (GET /api/alerts) -->
+        <!-- Tab 3: Live Dispatch Alerts -->
         <div id="alerts-tab" class="tab-content">
             <div class="panel">
                 <h3>🔔 Real-Time Dispatch & System Alerts</h3>
-                <p class="panel-desc">Live event stream fetched from MySQL table `audit_logs` via `GET /api/alerts`.</p>
+                <p class="panel-desc">Live logistics event notifications and automated milestone alerts.</p>
                 
                 <div id="alerts-stream-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
                     <div style="color: var(--text-secondary);">Loading system alerts...</div>
@@ -292,7 +292,7 @@
 
     </main>
 
-    <!-- Modal Form: Create New Shipment (Rich SCM Domain Fields) -->
+    <!-- Modal Form: Create New Shipment -->
     <div id="create-modal" class="modal-backdrop">
         <div class="modal-card">
             <h3 style="margin-bottom: 6px;">Create New Cargo Shipment</h3>
@@ -385,7 +385,7 @@
     <div id="status-modal" class="modal-backdrop">
         <div class="modal-card">
             <h3 style="margin-bottom: 6px;">Update Shipment Status</h3>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Update cargo milestone status in MySQL database.</p>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Update cargo milestone status in system manifests.</p>
             
             <form id="update-status-form">
                 <input type="hidden" id="status-shipment-id">
@@ -452,7 +452,7 @@
                         container.innerHTML = '<div style="color: var(--text-secondary);">No alerts recorded yet. Perform cargo dispatches or bookings to generate live alerts!</div>';
                     } else {
                         logs.forEach(log => {
-                            const badgeColor = log.action.includes('BMT') ? '#38bdf8' : (log.action.includes('CREATE') ? '#10b981' : '#f59e0b');
+                            const badgeColor = log.action.includes('CARRIER') ? '#38bdf8' : (log.action.includes('CREATE') ? '#10b981' : '#f59e0b');
                             const timeStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Recent Event';
                             container.innerHTML += `
                                 <div style="padding: 14px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-dark); border-radius: 8px;">
