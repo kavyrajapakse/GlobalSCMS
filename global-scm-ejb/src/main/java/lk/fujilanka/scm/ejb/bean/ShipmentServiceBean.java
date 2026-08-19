@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import lk.fujilanka.scm.core.entity.AuditLog;
+import lk.fujilanka.scm.core.entity.InventoryItem;
 import lk.fujilanka.scm.core.entity.Shipment;
 import lk.fujilanka.scm.core.entity.User;
 import lk.fujilanka.scm.ejb.interceptor.AuditLoggingInterceptor;
@@ -40,6 +41,39 @@ public class ShipmentServiceBean implements ShipmentServiceLocal {
         // Audit Log Entry (Automatic CMT persistence)
         AuditLog audit = new AuditLog("CREATE_SHIPMENT", creator, "Created shipment: " + shipment.getTrackingNumber());
         em.persist(audit);
+
+        // Multi-SKU Cargo Allocation: Deduct stock for all matched items in cargo description
+        if (shipment.getCargoDescription() != null && !shipment.getCargoDescription().isBlank()) {
+            try {
+                List<InventoryItem> items = em.createQuery("SELECT i FROM InventoryItem i", InventoryItem.class).getResultList();
+                String descLower = shipment.getCargoDescription().toLowerCase();
+
+                for (InventoryItem item : items) {
+                    if (descLower.contains(item.getSku().toLowerCase()) || descLower.contains(item.getName().toLowerCase())) {
+                        
+                        int deductQty = 20; // Default batch quantity
+                        try {
+                            String regex = "(\\d+)x\\s*" + java.util.regex.Pattern.quote(item.getSku().toLowerCase());
+                            java.util.regex.Matcher m = java.util.regex.Pattern.compile(regex).matcher(descLower);
+                            if (m.find()) {
+                                deductQty = Integer.parseInt(m.group(1));
+                            }
+                        } catch (Exception ignore) {}
+
+                        int newQty = Math.max(0, item.getQuantity() - deductQty);
+                        item.setQuantity(newQty);
+                        em.merge(item);
+
+                        String userStr = (username != null && !username.isBlank()) ? username : "coordinator";
+                        AuditLog stockAudit = new AuditLog("STOCK_DISPATCH_SHIPMENT", userStr, 
+                            "Automated Cargo Stock Allocation: Deducted " + deductQty + " units of " + item.getName() + " (" + item.getSku() + ") for Shipment #" + shipment.getTrackingNumber());
+                        em.persist(stockAudit);
+                    }
+                }
+            } catch (Exception ex) {
+                System.err.println("Inventory stock allocation check error: " + ex.getMessage());
+            }
+        }
 
         return shipment;
     }

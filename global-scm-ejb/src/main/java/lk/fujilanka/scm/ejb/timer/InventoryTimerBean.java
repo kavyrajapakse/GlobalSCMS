@@ -28,10 +28,10 @@ public class InventoryTimerBean {
                     .getResultList();
 
             for (InventoryItem item : lowStockItems) {
-                System.out.println("EJB Timer Alert: Low stock detected for SKU: " + item.getSku() + " (Qty: " + item.getQuantity() + ", Min: " + item.getMinThreshold() + ")");
+                System.out.println("EJB Timer Alert: Low stock detected for SKU: " + item.getSku() + " (Qty: " + item.getQuantity() + ", Min: " + item.getReorderThreshold() + ")");
 
                 // Persist EJB Timer Audit Log
-                AuditLog audit = new AuditLog("EJB_TIMER_STOCK_SCAN", null, "Low stock alert for SKU " + item.getSku() + ". Current Qty: " + item.getQuantity());
+                AuditLog audit = new AuditLog("TIMER_STOCK_SCAN", "system", "Low stock alert for SKU " + item.getSku() + ". Current Qty: " + item.getQuantity());
                 em.persist(audit);
             }
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class InventoryTimerBean {
     public void handleProgrammaticTimerTimeout(Timer timer) {
         Long shipmentId = (Long) timer.getInfo();
         System.out.println("EJB Timer [Programmatic Timeout]: Executing carrier retry for shipment ID " + shipmentId);
-        AuditLog audit = new AuditLog("EJB_TIMER_CARRIER_RETRY", null, "Executed programmatic carrier retry timeout for shipment ID " + shipmentId);
+        AuditLog audit = new AuditLog("TIMER_CARRIER_RETRY", "system", "Executed programmatic carrier retry timeout for shipment ID " + shipmentId);
         em.persist(audit);
     }
 }

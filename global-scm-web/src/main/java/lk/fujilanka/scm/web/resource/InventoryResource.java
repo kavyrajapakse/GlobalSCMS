@@ -26,6 +26,14 @@ public class InventoryResource {
     }
 
     @POST
+    public Response createItem(InventoryItem item, @Context SecurityContext sc) {
+        if (item.getQuantity() == null) item.setQuantity(100);
+        if (item.getReorderThreshold() == null) item.setReorderThreshold(30);
+        InventoryItem created = inventoryService.createItem(item);
+        return Response.status(Response.Status.CREATED).entity(created).build();
+    }
+
+    @POST
     @Path("/{id}/adjust")
     public Response adjustStock(@PathParam("id") Long id, @QueryParam("delta") int delta, @Context SecurityContext sc) {
         String username = (sc != null && sc.getUserPrincipal() != null) ? sc.getUserPrincipal().getName() : "warehouse";
