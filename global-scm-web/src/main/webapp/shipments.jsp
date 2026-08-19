@@ -717,11 +717,20 @@
                 resBanner.style.display = 'block';
 
                 if (response.ok) {
+                    resBanner.innerText = text;
+                    resBanner.style.display = 'block';
                     resBanner.style.background = 'rgba(16, 185, 129, 0.15)';
                     resBanner.style.color = '#6ee7b7';
                     resBanner.style.border = '1px solid rgba(16, 185, 129, 0.3)';
                     loadShipments();
                 } else {
+                    var displayMsg = text;
+                    try {
+                        var errObj = JSON.parse(text);
+                        if (errObj.message) displayMsg = errObj.message;
+                    } catch (ignore) {}
+                    resBanner.innerText = '⚠️ ' + displayMsg;
+                    resBanner.style.display = 'block';
                     resBanner.style.background = 'rgba(239, 68, 68, 0.15)';
                     resBanner.style.color = '#fca5a5';
                     resBanner.style.border = '1px solid rgba(239, 68, 68, 0.3)';

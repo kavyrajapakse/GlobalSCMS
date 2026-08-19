@@ -601,7 +601,8 @@
                     loadInventory();
                     alert('Stock Adjustment Applied Successfully!');
                 } else {
-                    alert('Failed to adjust stock.');
+                    var errObj = await res.json();
+                    alert('⚠️ Warehouse Operation Warning: ' + (errObj.message || 'Failed to adjust stock.'));
                 }
             } catch (err) {
                 alert('Network error applying stock adjustment.');

@@ -3,7 +3,6 @@ package lk.fujilanka.scm.ejb.bean;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import jakarta.interceptor.Interceptors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -11,15 +10,20 @@ import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.CustomsFiling;
 import lk.fujilanka.scm.core.entity.Shipment;
 import lk.fujilanka.scm.core.entity.User;
-import lk.fujilanka.scm.ejb.interceptor.AuditLoggingInterceptor;
+import lk.fujilanka.scm.ejb.interceptor.binding.CustomsComplianceCheck;
+import lk.fujilanka.scm.ejb.interceptor.binding.ExecutionPerformanceAudit;
+import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
 import lk.fujilanka.scm.ejb.local.CustomsFilingServiceLocal;
+import lk.fujilanka.scm.ejb.remote.CustomsFilingServiceRemote;
 
 import java.util.List;
 
 @Stateless
-@Interceptors(AuditLoggingInterceptor.class)
+@CustomsComplianceCheck
+@ScmAuditLog
+@ExecutionPerformanceAudit
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class CustomsFilingServiceBean implements CustomsFilingServiceLocal {
+public class CustomsFilingServiceBean implements CustomsFilingServiceLocal, CustomsFilingServiceRemote {
 
     @PersistenceContext(unitName = "SCMPU")
     private EntityManager em;

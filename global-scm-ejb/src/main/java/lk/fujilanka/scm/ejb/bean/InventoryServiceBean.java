@@ -3,18 +3,21 @@ package lk.fujilanka.scm.ejb.bean;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import jakarta.interceptor.Interceptors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.InventoryItem;
-import lk.fujilanka.scm.ejb.interceptor.AuditLoggingInterceptor;
+import lk.fujilanka.scm.core.exception.InsufficientStockException;
+import lk.fujilanka.scm.core.exception.ResourceNotFoundException;
+import lk.fujilanka.scm.ejb.interceptor.binding.ExecutionPerformanceAudit;
+import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
 import lk.fujilanka.scm.ejb.local.InventoryServiceLocal;
 
 import java.util.List;
 
 @Stateless
-@Interceptors(AuditLoggingInterceptor.class)
+@ScmAuditLog
+@ExecutionPerformanceAudit
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InventoryServiceBean implements InventoryServiceLocal {
 
@@ -33,12 +36,12 @@ public class InventoryServiceBean implements InventoryServiceLocal {
     public InventoryItem adjustStock(Long itemId, int quantityDelta, String username) {
         InventoryItem item = em.find(InventoryItem.class, itemId);
         if (item == null) {
-            throw new IllegalArgumentException("Inventory item with ID " + itemId + " not found.");
+            throw new ResourceNotFoundException("Inventory item with ID " + itemId + " not found.");
         }
 
         int newQty = item.getQuantity() + quantityDelta;
         if (newQty < 0) {
-            throw new IllegalArgumentException("Stock quantity cannot be negative.");
+            throw new InsufficientStockException("Stock quantity cannot drop below zero. Requested deduction: " + Math.abs(quantityDelta) + ", Current Available: " + item.getQuantity());
         }
 
         item.setQuantity(newQty);

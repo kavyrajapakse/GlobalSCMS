@@ -424,7 +424,8 @@
                     loadCustomsFilings();
                     alert('Customs Declaration Updated to ' + newStatus + '! (Logistics Shipment Status automatically updated).');
                 } else {
-                    alert('Failed to update customs filing status.');
+                    var errObj = await res.json();
+                    alert('⚠️ Customs Operation Warning: ' + (errObj.message || 'Failed to update customs filing status.'));
                 }
             } catch (err) {
                 alert('Network error updating customs status.');

@@ -1,8 +1,14 @@
 package lk.fujilanka.scm.ejb.interceptor;
 
+import jakarta.annotation.Priority;
 import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
+import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
 
+@Interceptor
+@ScmAuditLog
+@Priority(Interceptor.Priority.APPLICATION + 1)
 public class AuditLoggingInterceptor {
 
     @AroundInvoke

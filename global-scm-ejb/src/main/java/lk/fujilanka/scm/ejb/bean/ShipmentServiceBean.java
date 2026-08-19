@@ -3,7 +3,6 @@ package lk.fujilanka.scm.ejb.bean;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import jakarta.interceptor.Interceptors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -11,15 +10,18 @@ import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.InventoryItem;
 import lk.fujilanka.scm.core.entity.Shipment;
 import lk.fujilanka.scm.core.entity.User;
-import lk.fujilanka.scm.ejb.interceptor.AuditLoggingInterceptor;
+import lk.fujilanka.scm.ejb.interceptor.binding.ExecutionPerformanceAudit;
+import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
 import lk.fujilanka.scm.ejb.local.ShipmentServiceLocal;
+import lk.fujilanka.scm.ejb.remote.ShipmentServiceRemote;
 
 import java.util.List;
 
 @Stateless
-@Interceptors(AuditLoggingInterceptor.class)
+@ScmAuditLog
+@ExecutionPerformanceAudit
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class ShipmentServiceBean implements ShipmentServiceLocal {
+public class ShipmentServiceBean implements ShipmentServiceLocal, ShipmentServiceRemote {
 
     @PersistenceContext(unitName = "SCMPU")
     private EntityManager em;
