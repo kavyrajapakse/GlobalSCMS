@@ -46,7 +46,7 @@ public class CarrierBookingCoordinatorBean implements CarrierBookingCoordinatorL
             }
 
             shipment.setStatus("BOOKED_WITH_" + carrierCode.toUpperCase());
-            shipment.setCostUSD(costUSD);
+            shipment.setCostLkr(costUSD);
             em.merge(shipment);
 
             AuditLog audit = new AuditLog("CARRIER_BOOKING_BMT", null, "Booked shipment " + shipment.getTrackingNumber() + " with carrier " + carrierCode + " for $" + costUSD);
