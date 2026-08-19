@@ -15,6 +15,9 @@ public class AuditLog implements Serializable {
     @Column(nullable = false)
     private String action;
 
+    @Column(name = "username", length = 50)
+    private String username;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_audit_user"))
     private User user;
@@ -30,6 +33,15 @@ public class AuditLog implements Serializable {
     public AuditLog(String action, User user, String details) {
         this.action = action;
         this.user = user;
+        if (user != null) {
+            this.username = user.getUsername();
+        }
+        this.details = details;
+    }
+
+    public AuditLog(String action, String username, String details) {
+        this.action = action;
+        this.username = username;
         this.details = details;
     }
 
@@ -38,6 +50,9 @@ public class AuditLog implements Serializable {
 
     public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }

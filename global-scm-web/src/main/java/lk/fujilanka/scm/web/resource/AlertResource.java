@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.Response;
 import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.ejb.local.AuditLogServiceLocal;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Path("/alerts")
@@ -18,7 +19,12 @@ public class AlertResource {
 
     @GET
     public Response getRecentAlerts(@QueryParam("limit") @DefaultValue("10") int limit) {
-        List<AuditLog> logs = auditLogService.getRecentAuditLogs(limit);
-        return Response.ok(logs).build();
+        try {
+            List<AuditLog> logs = auditLogService.getRecentAuditLogs(limit);
+            return Response.ok(logs).build();
+        } catch (Exception e) {
+            System.err.println("AlertResource error: " + e.getMessage());
+            return Response.ok(new ArrayList<>()).build();
+        }
     }
 }

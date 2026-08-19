@@ -24,7 +24,7 @@ public class InventoryServiceBean implements InventoryServiceLocal {
     @Override
     public InventoryItem createItem(InventoryItem item) {
         em.persist(item);
-        AuditLog audit = new AuditLog("CREATE_INVENTORY_ITEM", null, "Created SKU: " + item.getSku());
+        AuditLog audit = new AuditLog("CREATE_INVENTORY_ITEM", "warehouse", "Created SKU: " + item.getSku());
         em.persist(audit);
         return item;
     }
@@ -44,7 +44,8 @@ public class InventoryServiceBean implements InventoryServiceLocal {
         item.setQuantity(newQty);
         InventoryItem updated = em.merge(item);
 
-        AuditLog audit = new AuditLog("STOCK_ADJUSTMENT", null, "Adjusted SKU " + item.getSku() + " quantity by " + quantityDelta + ". New Qty: " + newQty);
+        String userStr = (username != null && !username.isBlank()) ? username : "warehouse";
+        AuditLog audit = new AuditLog("STOCK_ADJUSTMENT", userStr, "Adjusted SKU " + item.getSku() + " quantity by " + quantityDelta + ". New Qty: " + newQty);
         em.persist(audit);
 
         return updated;
@@ -52,7 +53,7 @@ public class InventoryServiceBean implements InventoryServiceLocal {
 
     @Override
     public List<InventoryItem> getAllItems() {
-        return em.createQuery("SELECT i FROM InventoryItem i", InventoryItem.class).getResultList();
+        return em.createQuery("SELECT i FROM InventoryItem i ORDER BY i.id DESC", InventoryItem.class).getResultList();
     }
 
     @Override

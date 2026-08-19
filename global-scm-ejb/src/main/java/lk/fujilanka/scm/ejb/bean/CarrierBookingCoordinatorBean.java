@@ -15,8 +15,8 @@ import lk.fujilanka.scm.ejb.interceptor.AuditLoggingInterceptor;
 import lk.fujilanka.scm.ejb.local.CarrierBookingCoordinatorLocal;
 
 @Stateless
-@Interceptors(AuditLoggingInterceptor.class)
 @TransactionManagement(TransactionManagementType.BEAN)
+@Interceptors(AuditLoggingInterceptor.class)
 public class CarrierBookingCoordinatorBean implements CarrierBookingCoordinatorLocal {
 
     @PersistenceContext(unitName = "SCMPU")
@@ -28,6 +28,7 @@ public class CarrierBookingCoordinatorBean implements CarrierBookingCoordinatorL
     @Override
     public boolean processCarrierBooking(Long shipmentId, String carrierCode, double costUSD, String username) {
         UserTransaction userTransaction = sessionContext.getUserTransaction();
+
         try {
             // Programmatically BEGIN JTA Transaction (BMT)
             userTransaction.begin();
@@ -38,18 +39,18 @@ public class CarrierBookingCoordinatorBean implements CarrierBookingCoordinatorL
                 return false;
             }
 
-            // Business Constraint: If cost exceeds budget threshold ($50,000), ROLLBACK programmatically!
-            if (costUSD > 50000.0) {
-                System.err.println("BMT Booking Rejected: Cost $" + costUSD + " exceeds container budget threshold.");
+            // Business Constraint: If cost exceeds budget threshold (LKR 15,000,000), ROLLBACK programmatically!
+            if (costUSD > 15000000.0) {
+                System.err.println("BMT Booking Rejected: Cost LKR " + costUSD + " exceeds container budget threshold.");
                 userTransaction.rollback();
                 return false;
             }
 
+            // Update Status while preserving original cargo shipment cost
             shipment.setStatus("BOOKED_WITH_" + carrierCode.toUpperCase());
-            shipment.setCostLkr(costUSD);
             em.merge(shipment);
 
-            AuditLog audit = new AuditLog("CARRIER_BOOKING_BMT", null, "Booked shipment " + shipment.getTrackingNumber() + " with carrier " + carrierCode + " for $" + costUSD);
+            AuditLog audit = new AuditLog("CARRIER_BOOKING", username, "Booked shipment " + shipment.getTrackingNumber() + " with carrier " + carrierCode + " (Container Fee: LKR " + costUSD + ")");
             em.persist(audit);
 
             // Programmatically COMMIT JTA Transaction (BMT)
@@ -58,9 +59,11 @@ public class CarrierBookingCoordinatorBean implements CarrierBookingCoordinatorL
 
         } catch (Exception e) {
             try {
-                userTransaction.rollback();
-            } catch (Exception rollbackEx) {
-                rollbackEx.printStackTrace();
+                if (userTransaction != null) {
+                    userTransaction.rollback();
+                }
+            } catch (Exception ex) {
+                System.err.println("Error rolling back BMT transaction: " + ex.getMessage());
             }
             return false;
         }

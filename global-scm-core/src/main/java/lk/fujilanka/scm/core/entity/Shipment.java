@@ -40,6 +40,9 @@ public class Shipment implements Serializable {
     @Column(name = "weight_kg")
     private Double weightKg;
 
+    @Column(name = "cost_usd")
+    private Double costUSD;
+
     @Column(name = "cost_lkr")
     private Double costLkr;
 
@@ -51,7 +54,7 @@ public class Shipment implements Serializable {
     private Date expectedDeliveryDate;
 
     @Version
-    private Long version; // Optimistic locking for LO 2
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")
@@ -69,7 +72,6 @@ public class Shipment implements Serializable {
         this.status = "PENDING";
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -97,7 +99,14 @@ public class Shipment implements Serializable {
     public Double getWeightKg() { return weightKg; }
     public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
 
-    public Double getCostLkr() { return costLkr; }
+    public Double getCostUSD() { return costUSD; }
+    public void setCostUSD(Double costUSD) { this.costUSD = costUSD; }
+
+    public Double getCostLkr() {
+        if (costLkr != null && costLkr > 0) return costLkr;
+        if (costUSD != null && costUSD > 0) return costUSD;
+        return 0.0;
+    }
     public void setCostLkr(Double costLkr) { this.costLkr = costLkr; }
 
     public String getStatus() { return status; }

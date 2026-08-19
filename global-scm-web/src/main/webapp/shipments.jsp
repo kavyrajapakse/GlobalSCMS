@@ -493,8 +493,8 @@
                             else if (item.status === 'DELIVERED') delivered++;
 
                             var pillClass = item.status === 'DELIVERED' ? 'pill-green' : 'pill-blue';
-                            var rawCost = item.costLkr || item.costUSD || 2500000;
-                            var costFormatted = rawCost ? rawCost.toLocaleString() : '2,500,000';
+                            var rawCost = item.costLkr || item.costUSD || 0;
+                            var costFormatted = rawCost ? rawCost.toLocaleString() : '0';
                             var vendor = item.vendorName || 'Lanka Freight Ltd';
                             var mode = item.transportMode || 'OCEAN';
                             var priority = item.priority || 'STANDARD';
