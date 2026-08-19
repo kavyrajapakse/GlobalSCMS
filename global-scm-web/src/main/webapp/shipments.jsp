@@ -278,19 +278,14 @@
             </div>
         </div>
 
-        <!-- Tab 3: Dispatch Alerts -->
+        <!-- Tab 3: Live Dispatch Alerts from Backend (GET /api/alerts) -->
         <div id="alerts-tab" class="tab-content">
             <div class="panel">
-                <h3>🔔 Logistics & Freight Dispatch Alerts</h3>
-                <p class="panel-desc">Notifications for ocean freight dispatches and vessel arrival schedules.</p>
+                <h3>🔔 Real-Time Dispatch & System Alerts</h3>
+                <p class="panel-desc">Live event stream fetched from MySQL table `audit_logs` via `GET /api/alerts`.</p>
                 
-                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-                    <div style="padding: 14px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-dark); border-radius: 8px;">
-                        <strong style="color: var(--brand-accent);">Vessel Allocation Alert:</strong> Container booking confirmed for Maersk Line (Vessel ID #MSK-902).
-                    </div>
-                    <div style="padding: 14px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-dark); border-radius: 8px;">
-                        <strong style="color: var(--success);">Port Clearance Alert:</strong> Shipment #SCM-TRK-90813 cleared Rotterdam Customs Terminal.
-                    </div>
+                <div id="alerts-stream-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                    <div style="color: var(--text-secondary);">Loading system alerts...</div>
                 </div>
             </div>
         </div>
@@ -441,6 +436,36 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             btn.classList.add('active');
+            if (tabId === 'alerts-tab') loadAlerts();
+        }
+
+        async function loadAlerts() {
+            const container = document.getElementById('alerts-stream-container');
+            try {
+                const res = await fetch('api/alerts?limit=10', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const logs = await res.json();
+                    container.innerHTML = '';
+                    if (logs.length === 0) {
+                        container.innerHTML = '<div style="color: var(--text-secondary);">No alerts recorded yet. Perform cargo dispatches or bookings to generate live alerts!</div>';
+                    } else {
+                        logs.forEach(log => {
+                            const badgeColor = log.action.includes('BMT') ? '#38bdf8' : (log.action.includes('CREATE') ? '#10b981' : '#f59e0b');
+                            const timeStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Recent Event';
+                            container.innerHTML += `
+                                <div style="padding: 14px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-dark); border-radius: 8px;">
+                                    <strong style="color: ${badgeColor};">[${log.action}]</strong> ${log.details || 'System event recorded.'}
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Timestamp: ${timeStr}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+            } catch (err) {
+                container.innerHTML = '<div style="color: var(--danger);">Network error fetching live alerts.</div>';
+            }
         }
 
         async function loadShipments() {
