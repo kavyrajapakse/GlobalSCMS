@@ -9,6 +9,7 @@
         <class>lk.fujilanka.scm.core.entity.Role</class>
         <class>lk.fujilanka.scm.core.entity.User</class>
         <class>lk.fujilanka.scm.core.entity.Warehouse</class>
+        <class>lk.fujilanka.scm.core.entity.Vendor</class>
         <class>lk.fujilanka.scm.core.entity.InventoryItem</class>
         <class>lk.fujilanka.scm.core.entity.Shipment</class>
         <class>lk.fujilanka.scm.core.entity.CustomsFiling</class>

@@ -43,6 +43,10 @@ public class InventoryItem implements Serializable {
     @Column(length = 30)
     private String status = "IN_STOCK";
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "vendor_id", foreignKey = @ForeignKey(name = "fk_inventory_vendor"))
+    private Vendor vendor;
+
     @Version
     private Long version;
 
@@ -95,6 +99,9 @@ public class InventoryItem implements Serializable {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public Vendor getVendor() { return vendor; }
+    public void setVendor(Vendor vendor) { this.vendor = vendor; }
 
     public Long getVersion() { return version; }
     public void setVersion(Long version) { this.version = version; }

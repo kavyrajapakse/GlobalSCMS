@@ -303,8 +303,8 @@
                         <input type="text" id="new-tracking" placeholder="e.g. SCM-TRK-4001" required>
                     </div>
                     <div class="form-group">
-                        <label for="new-vendor">Vendor Name</label>
-                        <input type="text" id="new-vendor" placeholder="e.g. Lanka Freight Ltd" value="Lanka Freight Ltd" required>
+                        <label for="new-vendor">Vendor Partner</label>
+                        <select id="new-vendor"></select>
                     </div>
                 </div>
 
@@ -807,10 +807,31 @@
         function closeViewModal() { document.getElementById('view-modal').style.display = 'none'; }
         function closeStatusModal() { document.getElementById('status-modal').style.display = 'none'; }
         
+        async function loadVendorsForModal() {
+            try {
+                var res = await fetch('api/vendors', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    var vendors = await res.json();
+                    var select = document.getElementById('new-vendor');
+                    select.innerHTML = '';
+                    if (vendors.length === 0) {
+                        select.innerHTML = '<option value="Lanka Freight Ltd">Lanka Freight Ltd</option>';
+                    } else {
+                        vendors.forEach(function(v) {
+                            select.innerHTML += '<option value="' + v.companyName + '">' + v.companyName + ' (' + (v.country || 'Global') + ')</option>';
+                        });
+                    }
+                }
+            } catch (err) {}
+        }
+
         function openCreateModal() {
             selectedManifestItems = [];
             renderManifestItemsList();
             loadWarehouseInventoryForModal();
+            loadVendorsForModal();
             document.getElementById('new-tracking').value = 'SCM-TRK-' + Math.floor(1000 + Math.random() * 9000);
             document.getElementById('create-modal').style.display = 'flex';
         }

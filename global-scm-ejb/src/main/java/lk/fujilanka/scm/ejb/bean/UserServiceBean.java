@@ -5,8 +5,11 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.Role;
 import lk.fujilanka.scm.core.entity.User;
+import lk.fujilanka.scm.ejb.interceptor.binding.ExecutionPerformanceAudit;
+import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
 import lk.fujilanka.scm.ejb.local.UserServiceLocal;
 
 import java.util.HashSet;
@@ -15,6 +18,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Stateless
+@ScmAuditLog
+@ExecutionPerformanceAudit
 public class UserServiceBean implements UserServiceLocal {
 
     @PersistenceContext(unitName = "SCMPU")
@@ -76,6 +81,10 @@ public class UserServiceBean implements UserServiceLocal {
 
         User user = new User(username, rawPassword, roles);
         em.persist(user);
+
+        AuditLog audit = new AuditLog("USER_REGISTRATION", "admin", "Registered new system user: " + username + " with roles " + roleNames);
+        em.persist(audit);
+
         return user;
     }
 
@@ -119,5 +128,61 @@ public class UserServiceBean implements UserServiceLocal {
         } catch (NoResultException e) {
             return Set.of();
         }
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles ORDER BY u.id DESC", User.class).getResultList();
+    }
+
+    @Override
+    public User toggleUserStatus(Long userId) {
+        User user = em.find(User.class, userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User with ID " + userId + " not found.");
+        }
+
+        user.setActive(!user.isActive());
+        User updated = em.merge(user);
+
+        AuditLog audit = new AuditLog("USER_STATUS_TOGGLE", "admin", "Toggled user " + user.getUsername() + " status to " + (user.isActive() ? "ACTIVE" : "INACTIVE"));
+        em.persist(audit);
+
+        return updated;
+    }
+
+    @Override
+    public User updateUserRole(Long userId, String roleName) {
+        User user = em.find(User.class, userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User with ID " + userId + " not found.");
+        }
+
+        Role newRole = getOrCreateRole(roleName.toUpperCase());
+        user.getRoles().clear();
+        user.getRoles().add(newRole);
+
+        User updated = em.merge(user);
+
+        AuditLog audit = new AuditLog("USER_ROLE_UPDATE", "admin", "Updated user " + user.getUsername() + " security role to " + roleName);
+        em.persist(audit);
+
+        return updated;
+    }
+
+    @Override
+    public User changePassword(String username, String currentPassword, String newPassword) {
+        User user = authenticate(username, currentPassword);
+        if (user == null) {
+            throw new IllegalArgumentException("Invalid username or current password.");
+        }
+
+        user.setPasswordHash(newPassword);
+        User updated = em.merge(user);
+
+        AuditLog audit = new AuditLog("PASSWORD_CHANGED", username, "User updated account password successfully.");
+        em.persist(audit);
+
+        return updated;
     }
 }

@@ -22,6 +22,10 @@ public class Shipment implements Serializable {
     @Column(name = "vendor_name", length = 100)
     private String vendorName;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "vendor_id", foreignKey = @ForeignKey(name = "fk_shipments_vendor"))
+    private Vendor vendor;
+
     @Column(nullable = false, length = 100)
     private String origin;
 
@@ -78,8 +82,14 @@ public class Shipment implements Serializable {
     public String getTrackingNumber() { return trackingNumber; }
     public void setTrackingNumber(String trackingNumber) { this.trackingNumber = trackingNumber; }
 
-    public String getVendorName() { return vendorName; }
+    public String getVendorName() {
+        if (vendor != null && vendor.getCompanyName() != null) return vendor.getCompanyName();
+        return vendorName;
+    }
     public void setVendorName(String vendorName) { this.vendorName = vendorName; }
+
+    public Vendor getVendor() { return vendor; }
+    public void setVendor(Vendor vendor) { this.vendor = vendor; }
 
     public String getOrigin() { return origin; }
     public void setOrigin(String origin) { this.origin = origin; }
