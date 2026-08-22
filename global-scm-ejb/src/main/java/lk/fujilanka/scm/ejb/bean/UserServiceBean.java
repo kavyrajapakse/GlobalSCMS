@@ -9,6 +9,7 @@ import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.Role;
 import lk.fujilanka.scm.core.entity.User;
 import lk.fujilanka.scm.core.entity.Vendor;
+import lk.fujilanka.scm.core.util.PasswordUtil;
 import lk.fujilanka.scm.ejb.interceptor.binding.ExecutionPerformanceAudit;
 import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
 import lk.fujilanka.scm.ejb.local.UserServiceLocal;
@@ -102,7 +103,10 @@ public class UserServiceBean implements UserServiceLocal {
             roles.add(getOrCreateRole(roleName.toUpperCase()));
         }
 
-        User user = new User(username, fullName, email, phone, department, rawPassword, roles, requiresPasswordChange);
+        // Secure Salted SHA-256 Hashing for Database Storage
+        String passwordHash = PasswordUtil.hashPassword(rawPassword);
+
+        User user = new User(username, fullName, email, phone, department, passwordHash, roles, requiresPasswordChange);
 
         // If user is a vendor representative, link to the vendor entity
         if (vendorId != null) {
@@ -131,7 +135,8 @@ public class UserServiceBean implements UserServiceLocal {
         int randomCode = 1000 + new SecureRandom().nextInt(9000);
         String tempPass = "Scm#" + randomCode + "!";
 
-        user.setPasswordHash(tempPass);
+        // Store secure cryptographic hash in database
+        user.setPasswordHash(PasswordUtil.hashPassword(tempPass));
         user.setRequiresPasswordChange(true);
         em.merge(user);
 
@@ -149,8 +154,7 @@ public class UserServiceBean implements UserServiceLocal {
                           .getSingleResult();
 
             if (user != null && user.isActive()) {
-                String pass = user.getPasswordHash();
-                if (pass.equals(rawPassword)) {
+                if (PasswordUtil.verifyPassword(rawPassword, user.getPasswordHash())) {
                     user.setLastLoginAt(LocalDateTime.now());
                     em.merge(user);
                     return user;
@@ -222,7 +226,7 @@ public class UserServiceBean implements UserServiceLocal {
             throw new IllegalArgumentException("Invalid username or current password.");
         }
 
-        user.setPasswordHash(newPassword);
+        user.setPasswordHash(PasswordUtil.hashPassword(newPassword));
         user.setRequiresPasswordChange(false);
         User updated = em.merge(user);
 

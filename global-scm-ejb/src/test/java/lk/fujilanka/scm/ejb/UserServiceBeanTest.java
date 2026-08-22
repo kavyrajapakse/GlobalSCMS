@@ -1,10 +1,10 @@
 package lk.fujilanka.scm.ejb;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import lk.fujilanka.scm.core.entity.Role;
 import lk.fujilanka.scm.core.entity.User;
+import lk.fujilanka.scm.core.util.PasswordUtil;
 import lk.fujilanka.scm.ejb.bean.UserServiceBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,7 +46,8 @@ class UserServiceBeanTest {
     @Test
     @DisplayName("Should successfully authenticate user with valid credentials")
     void testAuthenticateSuccess() {
-        User user = new User("admin", "Kavithma Rajapakse", "kavithma@gmail.com", "+94 77 111 2233", "Administration", "admin123", Set.of(new Role("ADMIN")), false);
+        String hashedPassword = PasswordUtil.hashPassword("admin123");
+        User user = new User("admin", "Kavithma Rajapakse", "kavithma@gmail.com", "+94 77 111 2233", "Administration", hashedPassword, Set.of(new Role("ADMIN")), false);
 
         when(em.createQuery(contains("SELECT u FROM User u WHERE u.username = :username"), eq(User.class))).thenReturn(userQuery);
         when(userQuery.setParameter("username", "admin")).thenReturn(userQuery);
@@ -62,7 +63,8 @@ class UserServiceBeanTest {
     @Test
     @DisplayName("Should reject authentication with invalid password")
     void testAuthenticateFailure() {
-        User user = new User("admin", "Kavithma Rajapakse", "kavithma@gmail.com", "+94 77 111 2233", "Administration", "admin123", Set.of(new Role("ADMIN")), false);
+        String hashedPassword = PasswordUtil.hashPassword("admin123");
+        User user = new User("admin", "Kavithma Rajapakse", "kavithma@gmail.com", "+94 77 111 2233", "Administration", hashedPassword, Set.of(new Role("ADMIN")), false);
 
         when(em.createQuery(contains("SELECT u FROM User u WHERE u.username = :username"), eq(User.class))).thenReturn(userQuery);
         when(userQuery.setParameter("username", "admin")).thenReturn(userQuery);
@@ -74,7 +76,7 @@ class UserServiceBeanTest {
     }
 
     @Test
-    @DisplayName("Should generate secure temporary password and set requiresPasswordChange flag")
+    @DisplayName("Should generate secure temporary password, store cryptographic hash, and set requiresPasswordChange flag")
     void testResetUserTemporaryPassword() {
         User user = new User("coordinator01", "Nimal Perera", "nimal@gmail.com", "+94 71 222 3344", "Logistics", "oldpass", Set.of(new Role("COORDINATOR")), false);
         user.setId(6L);
@@ -86,14 +88,15 @@ class UserServiceBeanTest {
         assertNotNull(tempPass);
         assertTrue(tempPass.startsWith("Scm#"));
         assertTrue(user.isRequiresPasswordChange());
-        assertEquals(tempPass, user.getPasswordHash());
+        assertTrue(PasswordUtil.verifyPassword(tempPass, user.getPasswordHash()));
         verify(em, times(1)).merge(user);
     }
 
     @Test
-    @DisplayName("Should change permanent password and clear requiresPasswordChange flag")
+    @DisplayName("Should change permanent password, store cryptographic hash, and clear requiresPasswordChange flag")
     void testChangePassword() {
-        User user = new User("coordinator01", "Nimal Perera", "nimal@gmail.com", "+94 71 222 3344", "Logistics", "Scm#1234!", Set.of(new Role("COORDINATOR")), true);
+        String currentHashed = PasswordUtil.hashPassword("Scm#1234!");
+        User user = new User("coordinator01", "Nimal Perera", "nimal@gmail.com", "+94 71 222 3344", "Logistics", currentHashed, Set.of(new Role("COORDINATOR")), true);
 
         when(em.createQuery(contains("SELECT u FROM User u WHERE u.username = :username"), eq(User.class))).thenReturn(userQuery);
         when(userQuery.setParameter("username", "coordinator01")).thenReturn(userQuery);
@@ -103,7 +106,7 @@ class UserServiceBeanTest {
         User updated = userService.changePassword("coordinator01", "Scm#1234!", "NewPermanentPass@2026");
 
         assertNotNull(updated);
-        assertEquals("NewPermanentPass@2026", updated.getPasswordHash());
+        assertTrue(PasswordUtil.verifyPassword("NewPermanentPass@2026", updated.getPasswordHash()));
         assertFalse(updated.isRequiresPasswordChange());
     }
 }

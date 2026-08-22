@@ -9,5 +9,6 @@ public interface ShipmentServiceLocal {
     Shipment createShipment(Shipment shipment, String username);
     Shipment updateShipmentStatus(Long id, String status, String username);
     List<Shipment> getAllShipments();
+    List<Shipment> getShipmentsByVendor(Long vendorId);
     Shipment findById(Long id);
 }
