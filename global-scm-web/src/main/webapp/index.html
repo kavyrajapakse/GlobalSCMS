@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlobalTrade SCM Portal | Enterprise Security & Authentication</title>
+    <title>GlobalTrade SCM Portal | Enterprise Supply Chain Access</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -66,8 +66,9 @@
         .btn-submit:hover { transform: translateY(-1px); }
         .error-banner { margin-top: 16px; padding: 12px; background: var(--danger-bg); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-sm); color: #fca5a5; font-size: 13px; }
 
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(9, 13, 22, 0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 200; }
-        .modal-card { width: 100%; max-width: 440px; background: var(--bg-surface); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); }
+        /* Modal styling */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(9, 13, 22, 0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 200; }
+        .modal-card { width: 100%; max-width: 440px; background: var(--bg-surface); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
@@ -86,10 +87,10 @@
                 <div class="hero-content">
                     <span class="hero-tag">ENTERPRISE PLATFORM v2.5</span>
                     <h1>Global Logistics & Autonomous Supply Chain Control.</h1>
-                    <p>Protected by Jakarta EE 10, EJB Timers, JTA Transactions, and JAAS Security Frameworks linked to MySQL.</p>
+                    <p>Next-generation enterprise supply chain control, freight monitoring, and international trade compliance management.</p>
                 </div>
 
-                <div style="font-size: 13px; color: var(--text-muted);">Powered by Payara 6 • MySQL Database</div>
+                <div style="font-size: 13px; color: var(--text-muted);">Enterprise Supply Chain Management System</div>
             </div>
 
             <!-- Right Form Panel -->
@@ -97,7 +98,7 @@
                 <div class="form-container">
                     <div class="form-header">
                         <h2>Welcome back</h2>
-                        <p>Authenticate with SCMRealm to access protected supply chain modules.</p>
+                        <p>Sign in to access your authorized supply chain management workspace.</p>
                     </div>
 
                     <!-- Quick Demo Credentials Selector -->
@@ -128,13 +129,9 @@
                         </div>
 
                         <button type="submit" id="submit-btn" class="btn-submit">
-                            <span>Authenticate (JAAS Login)</span>
+                            <span>Secure Sign In</span>
                         </button>
                     </form>
-
-                    <div style="margin-top: 16px; text-align: center;">
-                        <a href="#" onclick="openPasswordModal(); return false;" style="color: var(--brand-accent); font-size: 12px; font-weight: 600; text-decoration: none;">🔑 Change Password / First-Login Onboarding Setup</a>
-                    </div>
 
                     <div id="login-error" class="error-banner" style="display: none;"></div>
                 </div>
@@ -142,81 +139,44 @@
         </div>
     </div>
 
-    <!-- Modal Form: Change Password / First-Login Setup -->
-    <div id="password-modal" class="modal-backdrop">
+    <!-- Modal Form: Mandatory First-Time Login Password Setup -->
+    <div id="first-login-modal" class="modal-backdrop">
         <div class="modal-card">
-            <h3 style="margin-bottom: 6px;">🔑 Change Account Password</h3>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">First-time login setup & password security update.</p>
+            <div style="display: inline-block; padding: 4px 10px; background: rgba(37, 99, 235, 0.15); color: var(--brand-accent); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 12px;">FIRST-TIME LOGIN SETUP</div>
+            <h3 style="margin-bottom: 6px; font-size: 20px;">🔐 Set Your Permanent Password</h3>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">You signed in with a temporary password. For enterprise security compliance, please set your permanent password to continue.</p>
             
-            <form id="change-password-form">
+            <form id="first-login-form">
                 <div class="input-group">
-                    <label for="change-user">Username</label>
+                    <label for="first-login-user">Account Username</label>
                     <div class="input-wrapper">
-                        <input type="text" id="change-user" required placeholder="Enter your account username">
+                        <input type="text" id="first-login-user" readonly style="opacity: 0.7; cursor: not-allowed;">
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label for="change-old-pass">Current / Temporary Password</label>
+                    <label for="first-login-new-pass">New Permanent Password</label>
                     <div class="input-wrapper">
-                        <input type="password" id="change-old-pass" required placeholder="Current password">
+                        <input type="password" id="first-login-new-pass" required placeholder="Choose a strong password" minlength="4">
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label for="change-new-pass">New Password</label>
+                    <label for="first-login-confirm-pass">Confirm New Password</label>
                     <div class="input-wrapper">
-                        <input type="password" id="change-new-pass" required placeholder="Enter new password">
+                        <input type="password" id="first-login-confirm-pass" required placeholder="Re-enter new password" minlength="4">
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <button type="button" class="btn-submit" style="background: transparent; border: 1px solid var(--border-dark); margin-top: 0;" onclick="closePasswordModal()">Cancel</button>
-                    <button type="submit" class="btn-submit" style="margin-top: 0;">Update Password</button>
-                </div>
+                <button type="submit" id="first-login-submit-btn" class="btn-submit" style="margin-top: 24px;">
+                    <span>Set Permanent Password & Enter Workspace</span>
+                </button>
             </form>
+
+            <div id="first-login-error" class="error-banner" style="display: none;"></div>
         </div>
     </div>
 
     <script src="app.js"></script>
-    <script>
-        function openPasswordModal() {
-            document.getElementById('password-modal').style.display = 'flex';
-        }
-
-        function closePasswordModal() {
-            document.getElementById('password-modal').style.display = 'none';
-        }
-
-        document.getElementById('change-password-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            var username = document.getElementById('change-user').value;
-            var currentPassword = document.getElementById('change-old-pass').value;
-            var newPassword = document.getElementById('change-new-pass').value;
-
-            try {
-                var res = await fetch('api/users/change-password', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: username,
-                        currentPassword: currentPassword,
-                        newPassword: newPassword
-                    })
-                });
-
-                if (res.ok) {
-                    var data = await res.json();
-                    closePasswordModal();
-                    alert('🔑 ' + (data.message || 'Password updated successfully! Please sign in with your new password.'));
-                } else {
-                    var errData = await res.json();
-                    alert('⚠️ Password Update Failed: ' + (errData.message || 'Invalid current password.'));
-                }
-            } catch (err) {
-                alert('Network error updating password.');
-            }
-        });
-    </script>
 </body>
 </html>

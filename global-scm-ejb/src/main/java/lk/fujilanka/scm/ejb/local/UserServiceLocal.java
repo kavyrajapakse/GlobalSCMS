@@ -9,6 +9,11 @@ import java.util.Set;
 @Local
 public interface UserServiceLocal {
     User registerUser(String username, String rawPassword, Set<String> roleNames);
+    User registerUser(String username, String email, String rawPassword, Set<String> roleNames);
+    User registerUser(String username, String email, String rawPassword, Set<String> roleNames, boolean requiresPasswordChange);
+    User registerUser(String username, String fullName, String email, String phone, String department, String rawPassword, Set<String> roleNames, boolean requiresPasswordChange);
+    User registerUser(String username, String fullName, String email, String phone, String department, Long vendorId, String rawPassword, Set<String> roleNames, boolean requiresPasswordChange);
+    String resetUserTemporaryPassword(Long userId);
     User authenticate(String username, String rawPassword);
     Set<String> getUserRoles(String username);
     List<User> getAllUsers();

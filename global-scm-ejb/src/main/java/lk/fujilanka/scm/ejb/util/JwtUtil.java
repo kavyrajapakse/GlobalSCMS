@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 public class JwtUtil {
-    private static final String SECRET = "87878787877SCMSecretKeyForHMAC256SignatureVerification";
+    private static final String SECRET = System.getenv().getOrDefault("SCM_JWT_SECRET", "87878787877SCMSecretKeyForHMAC256SignatureVerification");
     private static final Algorithm ALGORITHM = Algorithm.HMAC256(SECRET);
 
     private static final long EXPIRATION_SECONDS = 3600; // 1 hour token lifetime
@@ -46,8 +46,18 @@ public class JwtUtil {
         return parseToken(token).getSubject();
     }
 
+    public static String getUsername(DecodedJWT jwt) {
+        return jwt != null ? jwt.getSubject() : null;
+    }
+
     public static Set<String> getRoles(String token) {
         List<String> roles = parseToken(token).getClaim("roles").asList(String.class);
+        return roles != null ? Set.copyOf(roles) : Set.of();
+    }
+
+    public static Set<String> getRoles(DecodedJWT jwt) {
+        if (jwt == null) return Set.of();
+        List<String> roles = jwt.getClaim("roles").asList(String.class);
         return roles != null ? Set.copyOf(roles) : Set.of();
     }
 }

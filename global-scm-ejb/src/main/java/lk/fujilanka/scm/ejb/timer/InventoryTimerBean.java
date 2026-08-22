@@ -8,49 +8,54 @@ import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.InventoryItem;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Stateless
 public class InventoryTimerBean {
+
+    private static final Logger LOGGER = Logger.getLogger(InventoryTimerBean.class.getName());
 
     @PersistenceContext(unitName = "SCMPU")
     private EntityManager em;
 
     @Resource
-    private SessionContext sessionContext;
+    private TimerService timerService;
 
-    // Declarative EJB Timer: Automatically runs every 5 minutes to monitor inventory stock
-    @Schedule(minute = "*/5", hour = "*", persistent = false)
-    public void executeAutomaticStockCheck() {
-        System.out.println("EJB Timer [Declarative]: Executing automated inventory stock scan...");
-
-        try {
-            List<InventoryItem> lowStockItems = em.createNamedQuery("InventoryItem.findLowStock", InventoryItem.class)
-                    .getResultList();
-
-            for (InventoryItem item : lowStockItems) {
-                System.out.println("EJB Timer Alert: Low stock detected for SKU: " + item.getSku() + " (Qty: " + item.getQuantity() + ", Min: " + item.getReorderThreshold() + ")");
-
-                // Persist EJB Timer Audit Log
-                AuditLog audit = new AuditLog("TIMER_STOCK_SCAN", "system", "Low stock alert for SKU " + item.getSku() + ". Current Qty: " + item.getQuantity());
-                em.persist(audit);
-            }
-        } catch (Exception e) {
-            System.err.println("EJB Timer execution error: " + e.getMessage());
-        }
+    // Persistent Declarative EJB Timer: Automatically scans low stock items every 30 minutes
+    @Schedule(minute = "*/30", hour = "*", persistent = true)
+    public void scanLowStockItemsDeclarative() {
+        LOGGER.info("[Persistent Declarative EJB Timer]: Initiating periodic warehouse inventory scan...");
+        performLowStockScan("DeclarativeTimer");
     }
 
-    // Programmatic EJB Timer: Creates a one-off retry timer after specified delay
-    public void scheduleCarrierRetryTimer(Long shipmentId, long delayMillis) {
-        TimerService timerService = sessionContext.getTimerService();
-        timerService.createTimer(delayMillis, shipmentId);
-        System.out.println("EJB Timer [Programmatic]: Scheduled carrier retry timer for shipment ID " + shipmentId + " in " + (delayMillis / 1000) + " seconds.");
+    // Persistent Programmatic EJB Timer: Dynamically created for targeted stock monitoring (persistent = true)
+    public void createProgrammaticStockCheckTimer(long durationMs, String targetSku) {
+        TimerConfig config = new TimerConfig(targetSku, true);
+        timerService.createSingleActionTimer(durationMs, config);
+        LOGGER.info("[Persistent Programmatic EJB Timer]: Persistent programmatic timer scheduled for SKU " + targetSku + " in " + durationMs + " ms.");
     }
 
     @Timeout
-    public void handleProgrammaticTimerTimeout(Timer timer) {
-        Long shipmentId = (Long) timer.getInfo();
-        System.out.println("EJB Timer [Programmatic Timeout]: Executing carrier retry for shipment ID " + shipmentId);
-        AuditLog audit = new AuditLog("TIMER_CARRIER_RETRY", "system", "Executed programmatic carrier retry timeout for shipment ID " + shipmentId);
-        em.persist(audit);
+    public void handleProgrammaticTimeout(Timer timer) {
+        String sku = (String) timer.getInfo();
+        LOGGER.info("[Programmatic EJB Timer - Timeout]: Executing targeted scan for SKU: " + sku);
+        performLowStockScan("ProgrammaticTimer-" + sku);
+    }
+
+    private void performLowStockScan(String triggeredBy) {
+        try {
+            List<InventoryItem> lowStockItems = em.createQuery(
+                "SELECT i FROM InventoryItem i WHERE i.quantity < i.reorderThreshold", InventoryItem.class)
+                .getResultList();
+
+            for (InventoryItem item : lowStockItems) {
+                AuditLog audit = new AuditLog("INVENTORY_LOW_STOCK_ALERT", "system", 
+                    "Low Stock Alert (" + triggeredBy + "): Item " + item.getName() + " (SKU: " + item.getSku() + ") is below reorder threshold. Quantity: " + item.getQuantity());
+                em.persist(audit);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error executing inventory scan", e);
+        }
     }
 }

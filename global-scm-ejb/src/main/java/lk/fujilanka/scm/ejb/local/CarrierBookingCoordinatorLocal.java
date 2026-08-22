@@ -4,5 +4,5 @@ import jakarta.ejb.Local;
 
 @Local
 public interface CarrierBookingCoordinatorLocal {
-    boolean processCarrierBooking(Long shipmentId, String carrierCode, double costUSD, String username);
+    boolean processCarrierBooking(Long shipmentId, String carrierCode, double costLkr, String username);
 }

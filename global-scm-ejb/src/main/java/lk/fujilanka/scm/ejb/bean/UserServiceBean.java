@@ -8,10 +8,13 @@ import jakarta.persistence.PersistenceContext;
 import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.Role;
 import lk.fujilanka.scm.core.entity.User;
+import lk.fujilanka.scm.core.entity.Vendor;
 import lk.fujilanka.scm.ejb.interceptor.binding.ExecutionPerformanceAudit;
 import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
 import lk.fujilanka.scm.ejb.local.UserServiceLocal;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,17 +35,17 @@ public class UserServiceBean implements UserServiceLocal {
             if (count == 0) {
                 System.out.println("UserServiceBean: Database empty. Seeding default JPA roles and users...");
 
-                Role adminRole = getOrCreateRole("ADMIN");
-                Role coordRole = getOrCreateRole("COORDINATOR");
-                Role customsRole = getOrCreateRole("CUSTOMS_AGENT");
-                Role warehouseRole = getOrCreateRole("WAREHOUSE_MANAGER");
-                Role vendorRole = getOrCreateRole("VENDOR_REP");
+                getOrCreateRole("ADMIN");
+                getOrCreateRole("COORDINATOR");
+                getOrCreateRole("CUSTOMS_AGENT");
+                getOrCreateRole("WAREHOUSE_MANAGER");
+                getOrCreateRole("VENDOR_REP");
 
-                registerUser("admin", "admin123", Set.of("ADMIN", "COORDINATOR"));
-                registerUser("coordinator", "pass123", Set.of("COORDINATOR"));
-                registerUser("customs", "pass123", Set.of("CUSTOMS_AGENT"));
-                registerUser("warehouse", "pass123", Set.of("WAREHOUSE_MANAGER"));
-                registerUser("vendor", "pass123", Set.of("VENDOR_REP"));
+                registerUser("admin", "Kavithma Rajapakse", "kavithmarajapakse03@gmail.com", "+94 77 111 2233", "Executive Administration", null, "admin123", Set.of("ADMIN", "COORDINATOR"), false);
+                registerUser("coordinator", "Nimal Perera", "kavithmarajapakse03@gmail.com", "+94 71 222 3344", "Ocean Freight & Logistics", null, "pass123", Set.of("COORDINATOR"), false);
+                registerUser("custom", "Sunil Jayawardena", "kavithmarajapakse03@gmail.com", "+94 76 333 4455", "Port Customs Compliance", null, "pass123", Set.of("CUSTOMS_AGENT"), false);
+                registerUser("warehouse", "Ruwan Fernando", "kavithmarajapakse03@gmail.com", "+94 70 444 5566", "Depot & Stock Management", null, "pass123", Set.of("WAREHOUSE_MANAGER"), false);
+                registerUser("vendor", "Fuji Lanka Supplier Rep", "kavithmarajapakse03@gmail.com", "+94 77 555 6677", "Supplier Operations", 1L, "pass123", Set.of("VENDOR_REP"), false);
 
                 System.out.println("UserServiceBean: JPA Default users seeded successfully in MySQL.");
             }
@@ -65,6 +68,26 @@ public class UserServiceBean implements UserServiceLocal {
 
     @Override
     public User registerUser(String username, String rawPassword, Set<String> roleNames) {
+        return registerUser(username, username, username + "@gmail.com", "+94 77 123 4567", "Global Logistics", null, rawPassword, roleNames, true);
+    }
+
+    @Override
+    public User registerUser(String username, String email, String rawPassword, Set<String> roleNames) {
+        return registerUser(username, username, email, "+94 77 123 4567", "Global Logistics", null, rawPassword, roleNames, true);
+    }
+
+    @Override
+    public User registerUser(String username, String email, String rawPassword, Set<String> roleNames, boolean requiresPasswordChange) {
+        return registerUser(username, username, email, "+94 77 123 4567", "Global Logistics", null, rawPassword, roleNames, requiresPasswordChange);
+    }
+
+    @Override
+    public User registerUser(String username, String fullName, String email, String phone, String department, String rawPassword, Set<String> roleNames, boolean requiresPasswordChange) {
+        return registerUser(username, fullName, email, phone, department, null, rawPassword, roleNames, requiresPasswordChange);
+    }
+
+    @Override
+    public User registerUser(String username, String fullName, String email, String phone, String department, Long vendorId, String rawPassword, Set<String> roleNames, boolean requiresPasswordChange) {
         try {
             em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
               .setParameter("username", username)
@@ -79,13 +102,43 @@ public class UserServiceBean implements UserServiceLocal {
             roles.add(getOrCreateRole(roleName.toUpperCase()));
         }
 
-        User user = new User(username, rawPassword, roles);
+        User user = new User(username, fullName, email, phone, department, rawPassword, roles, requiresPasswordChange);
+
+        // If user is a vendor representative, link to the vendor entity
+        if (vendorId != null) {
+            Vendor vendor = em.find(Vendor.class, vendorId);
+            if (vendor != null) {
+                user.setVendor(vendor);
+                user.setDepartment("Vendor Partner: " + vendor.getCompanyName());
+            }
+        }
+
         em.persist(user);
 
-        AuditLog audit = new AuditLog("USER_REGISTRATION", "admin", "Registered new system user: " + username + " with roles " + roleNames);
+        AuditLog audit = new AuditLog("USER_REGISTRATION", "admin", "Registered staff/partner: " + fullName + " (" + username + " - " + user.getDepartment() + ") with roles " + roleNames);
         em.persist(audit);
 
         return user;
+    }
+
+    @Override
+    public String resetUserTemporaryPassword(Long userId) {
+        User user = em.find(User.class, userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User with ID " + userId + " not found.");
+        }
+
+        int randomCode = 1000 + new SecureRandom().nextInt(9000);
+        String tempPass = "Scm#" + randomCode + "!";
+
+        user.setPasswordHash(tempPass);
+        user.setRequiresPasswordChange(true);
+        em.merge(user);
+
+        AuditLog audit = new AuditLog("TEMP_PASSWORD_GENERATED", "admin", "Generated temporary onboarding password for " + user.getFullName() + " (" + user.getUsername() + ")");
+        em.persist(audit);
+
+        return tempPass;
     }
 
     @Override
@@ -97,7 +150,9 @@ public class UserServiceBean implements UserServiceLocal {
 
             if (user != null && user.isActive()) {
                 String pass = user.getPasswordHash();
-                if (pass.equals(rawPassword) || rawPassword.equals("pass123") || rawPassword.equals("admin123")) {
+                if (pass.equals(rawPassword)) {
+                    user.setLastLoginAt(LocalDateTime.now());
+                    em.merge(user);
                     return user;
                 }
             }
@@ -114,17 +169,7 @@ public class UserServiceBean implements UserServiceLocal {
                           .setParameter("username", username)
                           .getSingleResult();
             
-            Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-            
-            if (roles.isEmpty()) {
-                String u = username.toLowerCase();
-                if (u.contains("admin")) return Set.of("ADMIN", "COORDINATOR");
-                if (u.contains("coordinator")) return Set.of("COORDINATOR");
-                if (u.contains("custom")) return Set.of("CUSTOMS_AGENT");
-                if (u.contains("warehouse")) return Set.of("WAREHOUSE_MANAGER");
-                if (u.contains("vendor")) return Set.of("VENDOR_REP");
-            }
-            return roles;
+            return user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
         } catch (NoResultException e) {
             return Set.of();
         }
@@ -132,7 +177,7 @@ public class UserServiceBean implements UserServiceLocal {
 
     @Override
     public List<User> getAllUsers() {
-        return em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles ORDER BY u.id DESC", User.class).getResultList();
+        return em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles LEFT JOIN FETCH u.vendor ORDER BY u.id DESC", User.class).getResultList();
     }
 
     @Override
@@ -145,7 +190,7 @@ public class UserServiceBean implements UserServiceLocal {
         user.setActive(!user.isActive());
         User updated = em.merge(user);
 
-        AuditLog audit = new AuditLog("USER_STATUS_TOGGLE", "admin", "Toggled user " + user.getUsername() + " status to " + (user.isActive() ? "ACTIVE" : "INACTIVE"));
+        AuditLog audit = new AuditLog("USER_STATUS_TOGGLE", "admin", "Toggled staff status for " + user.getFullName() + " (" + user.getUsername() + ") to " + (user.isActive() ? "ACTIVE" : "INACTIVE"));
         em.persist(audit);
 
         return updated;
@@ -164,7 +209,7 @@ public class UserServiceBean implements UserServiceLocal {
 
         User updated = em.merge(user);
 
-        AuditLog audit = new AuditLog("USER_ROLE_UPDATE", "admin", "Updated user " + user.getUsername() + " security role to " + roleName);
+        AuditLog audit = new AuditLog("USER_ROLE_UPDATE", "admin", "Updated security role for " + user.getFullName() + " to " + roleName);
         em.persist(audit);
 
         return updated;
@@ -178,9 +223,10 @@ public class UserServiceBean implements UserServiceLocal {
         }
 
         user.setPasswordHash(newPassword);
+        user.setRequiresPasswordChange(false);
         User updated = em.merge(user);
 
-        AuditLog audit = new AuditLog("PASSWORD_CHANGED", username, "User updated account password successfully.");
+        AuditLog audit = new AuditLog("PASSWORD_CHANGED", username, "Staff member " + user.getFullName() + " updated permanent password successfully.");
         em.persist(audit);
 
         return updated;

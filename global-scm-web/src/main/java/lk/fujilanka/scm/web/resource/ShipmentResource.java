@@ -1,5 +1,7 @@
 package lk.fujilanka.scm.web.resource;
 
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -14,6 +16,8 @@ import java.util.List;
 @Path("/shipments")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@DeclareRoles({"ADMIN", "COORDINATOR", "WAREHOUSE_MANAGER", "CUSTOMS_AGENT", "VENDOR_REP"})
+@RolesAllowed({"ADMIN", "COORDINATOR"})
 public class ShipmentResource {
 
     @EJB
@@ -23,6 +27,16 @@ public class ShipmentResource {
     public Response getAllShipments() {
         List<Shipment> shipments = shipmentService.getAllShipments();
         return Response.ok(shipments).build();
+    }
+
+    @GET
+    @Path("/{id}")
+    public Response getShipmentById(@PathParam("id") Long id) {
+        Shipment shipment = shipmentService.findById(id);
+        if (shipment == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(shipment).build();
     }
 
     @POST

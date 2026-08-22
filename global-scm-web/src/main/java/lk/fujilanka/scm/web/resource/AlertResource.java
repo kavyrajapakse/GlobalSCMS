@@ -1,5 +1,7 @@
 package lk.fujilanka.scm.web.resource;
 
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -12,6 +14,8 @@ import java.util.List;
 
 @Path("/alerts")
 @Produces(MediaType.APPLICATION_JSON)
+@DeclareRoles({"ADMIN", "COORDINATOR", "WAREHOUSE_MANAGER", "CUSTOMS_AGENT", "VENDOR_REP"})
+@RolesAllowed({"ADMIN", "COORDINATOR", "WAREHOUSE_MANAGER", "CUSTOMS_AGENT", "VENDOR_REP"})
 public class AlertResource {
 
     @EJB

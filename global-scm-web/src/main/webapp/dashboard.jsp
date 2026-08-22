@@ -89,6 +89,7 @@
         .pill-blue { background: rgba(37, 99, 235, 0.15); color: var(--brand-accent); }
         .pill-green { background: rgba(16, 185, 129, 0.15); color: var(--success); }
         .pill-red { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .pill-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.3); }
 
         .btn-table-action { padding: 6px 10px; background: rgba(37, 99, 235, 0.15); color: var(--brand-accent); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); margin-right: 4px; }
         .btn-table-action:hover { background: var(--brand-primary); color: white; }
@@ -102,7 +103,7 @@
         .btn-submit { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--brand-primary), #1d4ed8); color: white; border: none; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer; transition: var(--transition); }
 
         .modal-backdrop { position: fixed; inset: 0; background: rgba(9, 13, 22, 0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 200; }
-        .modal-card { width: 100%; max-width: 540px; background: var(--bg-surface); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); max-height: 90vh; overflow-y: auto; }
+        .modal-card { width: 100%; max-width: 580px; background: var(--bg-surface); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); max-height: 90vh; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -154,14 +155,14 @@
         <div class="page-header">
             <div>
                 <h1>Admin Overview & Enterprise User Management</h1>
-                <p>System-wide supply chain analytics, JAAS role assignments, and central telemetry control.</p>
+                <p>System-wide supply chain analytics, security role assignments, and central monitoring control.</p>
             </div>
             <button class="btn-action-primary" onclick="openRegisterUserModal()">+ Register New System User</button>
         </div>
 
         <!-- Sub-Feature Navigation Tabs -->
         <div class="sub-tabs">
-            <button class="tab-btn active" onclick="switchTab('users-tab', this)">👤 System User Management & Roles</button>
+            <button class="tab-btn active" onclick="switchTab('users-tab', this)">👤 Enterprise Staff & Partner Directory</button>
             <button class="tab-btn" onclick="switchTab('overview-tab', this)">📊 Global SCM System Executive Metrics</button>
             <button class="tab-btn" onclick="switchTab('alerts-tab', this)">🔔 Central System Audit Log Stream</button>
         </div>
@@ -172,24 +173,24 @@
             <!-- Top Metric Cards -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-title">Registered System Users</div>
+                    <div class="stat-title">Registered Staff Accounts</div>
                     <div class="stat-value" id="count-users">0</div>
-                    <div class="stat-sub">JAAS Authenticated Accounts</div>
+                    <div class="stat-sub">Active Enterprise Personnel</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">Active Security Roles</div>
                     <div class="stat-value" style="color: var(--brand-accent);">5 Roles</div>
-                    <div class="stat-sub">RBAC Security Engine</div>
+                    <div class="stat-sub">Role Access Engine</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">System Health & Security</div>
                     <div class="stat-value" style="font-size: 16px; color: var(--success); margin-top: 14px;">● 99.9% Operational Uptime</div>
-                    <div class="stat-sub">Payara Enterprise Cluster</div>
+                    <div class="stat-sub">High-Availability Infrastructure</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-title">EJB Active Timers</div>
+                    <div class="stat-title">Automated System Tasks</div>
                     <div class="stat-value" style="color: var(--warning);">5 Timers</div>
-                    <div class="stat-sub">Concurrent Background Scans</div>
+                    <div class="stat-sub">Background Operations</div>
                 </div>
             </div>
 
@@ -197,8 +198,8 @@
             <div class="top-row-cards">
                 <div class="analytics-card">
                     <div class="analytics-title">
-                        <span>Role-Based Access Control (RBAC) Distribution</span>
-                        <span style="font-size: 11px; font-weight: 700; color: var(--success);">🔒 JAAS JWT Security Active</span>
+                        <span>Security Access & Permission Distribution</span>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--success);">🔒 Encrypted Security Active</span>
                     </div>
                     <div class="progress-bar-wrap">
                         <div id="bar-delivered" class="bar-delivered" style="width: 100%;"></div>
@@ -207,28 +208,30 @@
 
                 <div class="timer-card">
                     <div style="font-size: 12px; font-weight: 700; color: var(--brand-accent); text-transform: uppercase; margin-bottom: 6px;">⏱️ Central Telemetry Engine</div>
-                    <div style="font-size: 13px; color: var(--text-secondary);">Timer Service: <strong style="color: white;">5 Domain Beans Active</strong></div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">System Services: <strong style="color: white;">5 Services Operational</strong></div>
                     <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Status: <span style="color: var(--success); font-weight: 700;">● System Telemetry Monitored</span></div>
                 </div>
             </div>
 
             <!-- Live Users Directory Table -->
             <div class="panel">
-                <h3>Registered System Accounts & Role Assignments</h3>
-                <p class="panel-desc">Central User database records controlling multi-portal authentication and authorization permissions.</p>
+                <h3>Enterprise Staff & Vendor Partner Directory</h3>
+                <p class="panel-desc">Corporate user directory managing departmental access, supplier partner associations, and authentication credentials.</p>
                 
                 <table>
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>Staff Member</th>
                             <th>Username</th>
-                            <th>Account Status</th>
-                            <th>Assigned Security Roles</th>
+                            <th>Contact Information</th>
+                            <th>Department & Role</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="users-table-body">
-                        <tr><td colspan="5" style="color: var(--text-muted);">Loading user accounts...</td></tr>
+                        <tr><td colspan="7" style="color: var(--text-muted);">Loading user accounts...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -269,7 +272,7 @@
         <div id="alerts-tab" class="tab-content">
             <div class="panel">
                 <h3>🔔 Central System Audit Log & Telemetry Stream</h3>
-                <p class="panel-desc">Complete system-wide audit trail logged by EJB Interceptors and Timers.</p>
+                <p class="panel-desc">Complete system-wide audit trail logged by automated security and monitoring services.</p>
                 
                 <div id="alerts-stream-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
                     <div style="color: var(--text-secondary);">Loading central audit logs...</div>
@@ -282,34 +285,66 @@
     <!-- Modal Form: Register New System User -->
     <div id="user-modal" class="modal-backdrop">
         <div class="modal-card">
-            <h3 style="margin-bottom: 6px;">Register New System User</h3>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Create new user account and assign JAAS role-based security access.</p>
+            <h3 style="margin-bottom: 6px;">Register New Staff / Partner Account</h3>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Provision enterprise account with departmental contact details and security permissions.</p>
             
             <form id="register-user-form">
-                <div class="form-group">
-                    <label for="new-username">Username</label>
-                    <input type="text" id="new-username" placeholder="e.g. john_doe" required>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="new-fullname">Full Name</label>
+                        <input type="text" id="new-fullname" placeholder="e.g. Kavithma Rajapakse" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-username">Account Username</label>
+                        <input type="text" id="new-username" placeholder="e.g. kavithma_admin" required>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="new-password">Password</label>
-                    <input type="password" id="new-password" placeholder="Password" required>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="new-email">Corporate Email Address</label>
+                        <input type="email" id="new-email" placeholder="e.g. kavithma@globaltrade.lk" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-phone">Contact Phone</label>
+                        <input type="text" id="new-phone" placeholder="e.g. +94 77 123 4567" value="+94 77 123 4567" required>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="new-role">Assigned Security Role</label>
-                    <select id="new-role" required>
-                        <option value="ADMIN">ADMIN (Full Access)</option>
-                        <option value="COORDINATOR">COORDINATOR (Shipments & Freight)</option>
-                        <option value="WAREHOUSE_MANAGER">WAREHOUSE_MANAGER (Stock & Inventory)</option>
-                        <option value="CUSTOMS_AGENT">CUSTOMS_AGENT (Port Customs Clearance)</option>
-                        <option value="VENDOR_REP">VENDOR_REP (Vendor Partner Portal)</option>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="new-department">Corporate Department</label>
+                        <input type="text" id="new-department" placeholder="e.g. Ocean Freight & Logistics" value="Logistics & Port Operations" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-role">Assigned Security Role</label>
+                        <select id="new-role" onchange="handleRoleChange(this.value)" required>
+                            <option value="ADMIN">ADMIN (Full Access)</option>
+                            <option value="COORDINATOR">COORDINATOR (Shipments & Freight)</option>
+                            <option value="WAREHOUSE_MANAGER">WAREHOUSE_MANAGER (Stock & Inventory)</option>
+                            <option value="CUSTOMS_AGENT">CUSTOMS_AGENT (Port Customs Clearance)</option>
+                            <option value="VENDOR_REP">VENDOR_REP (Vendor Partner Portal)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Vendor Selector for VENDOR_REP role -->
+                <div id="vendor-select-group" class="form-group" style="display: none; background: rgba(30, 41, 59, 0.6); padding: 14px; border-radius: 8px; border: 1px solid var(--border-dark);">
+                    <label for="new-vendor-id" style="color: #c084fc; font-weight: 700;">🏢 Link to Supplier Partner Company</label>
+                    <select id="new-vendor-id">
+                        <option value="">-- Select Registered Vendor Company --</option>
                     </select>
+                    <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">This links the user to their supplier entity for multi-tenant vendor portal access.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="new-password">Temporary Password <small style="color: var(--text-muted); font-weight: normal;">(Leave empty to auto-generate secure code)</small></label>
+                    <input type="text" id="new-password" placeholder="e.g. Scm#9042! (or auto-generated)">
                 </div>
 
                 <div style="display: flex; gap: 12px; margin-top: 24px;">
                     <button type="button" class="btn-submit" style="background: transparent; border: 1px solid var(--border-dark);" onclick="closeRegisterUserModal()">Cancel</button>
-                    <button type="submit" class="btn-submit">Register User Account</button>
+                    <button type="submit" class="btn-submit">Register Staff / Partner Account</button>
                 </div>
             </form>
         </div>
@@ -319,7 +354,7 @@
     <div id="role-modal" class="modal-backdrop">
         <div class="modal-card">
             <h3 style="margin-bottom: 6px;">✏️ Update Security Role Assignment</h3>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Modify RBAC security role for existing account.</p>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Modify security role for existing account.</p>
             
             <form id="update-role-form">
                 <input type="hidden" id="update-user-id">
@@ -378,6 +413,16 @@
         }
 
         var currentUserData = [];
+        var currentVendorsList = [];
+
+        function handleRoleChange(role) {
+            var vendorGroup = document.getElementById('vendor-select-group');
+            if (role === 'VENDOR_REP') {
+                vendorGroup.style.display = 'block';
+            } else {
+                vendorGroup.style.display = 'none';
+            }
+        }
 
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
@@ -386,6 +431,22 @@
             btn.classList.add('active');
             if (tabId === 'overview-tab') loadExecutiveMetrics();
             else if (tabId === 'alerts-tab') loadAlerts();
+        }
+
+        async function loadVendorsDropdown() {
+            try {
+                var res = await fetch('api/vendors', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    currentVendorsList = await res.json();
+                    var select = document.getElementById('new-vendor-id');
+                    select.innerHTML = '<option value="">-- Select Registered Vendor Company --</option>';
+                    currentVendorsList.forEach(function(v) {
+                        select.innerHTML += '<option value="' + v.id + '">' + v.companyName + ' (' + v.taxId + ')</option>';
+                    });
+                }
+            } catch (err) {}
         }
 
         async function loadUsers() {
@@ -403,7 +464,7 @@
                     var total = currentUserData.length;
 
                     if (total === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" style="color: var(--text-secondary);">No user accounts found. Click "+ Register New System User" to create one!</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="7" style="color: var(--text-secondary);">No staff accounts found. Click "+ Register New System User" to create one!</td></tr>';
                     } else {
                         currentUserData.forEach(function(u) {
                             var statusStr = u.active ? 'ACTIVE' : 'INACTIVE';
@@ -418,13 +479,31 @@
                                 roleBadges = '<span class="pill pill-yellow">USER</span>';
                             }
 
+                            var fullNameDisplay = u.fullName || u.username;
+                            var emailDisplay = u.email || (u.username + '@gmail.com');
+                            var phoneDisplay = u.phone || '+94 77 123 4567';
+                            var departmentDisplay = u.department || 'Global Supply Chain';
+
+                            var vendorBadge = '';
+                            if (u.vendor && u.vendor.companyName) {
+                                vendorBadge = '<div style="margin-top: 4px;"><span class="pill pill-purple">🏢 ' + u.vendor.companyName + '</span></div>';
+                            }
+
                             tbody.innerHTML += '<tr>' +
                                 '<td>#' + u.id + '</td>' +
-                                '<td><strong>' + u.username + '</strong></td>' +
-                                '<td><span class="pill ' + pillClass + '">' + statusStr + '</span></td>' +
-                                '<td>' + roleBadges + '</td>' +
+                                '<td><strong>' + fullNameDisplay + '</strong></td>' +
+                                '<td><code style="color: var(--brand-accent);">' + u.username + '</code></td>' +
                                 '<td>' +
-                                    '<button class="btn-table-action" onclick="sendOnboardingEmail(' + u.id + ', \'' + u.username + '\')">📧 Send Email</button>' +
+                                    '<div style="font-size: 13px; color: var(--text-primary);">' + emailDisplay + '</div>' +
+                                    '<div style="font-size: 11px; color: var(--text-muted);">' + phoneDisplay + '</div>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">' + departmentDisplay + '</div>' +
+                                    roleBadges + vendorBadge +
+                                '</td>' +
+                                '<td><span class="pill ' + pillClass + '">' + statusStr + '</span></td>' +
+                                '<td>' +
+                                    '<button class="btn-table-action" onclick="sendOnboardingEmail(' + u.id + ', \'' + fullNameDisplay.replace(/'/g, "\\'") + '\')">📧 Send Email</button>' +
                                     '<button class="btn-table-action" onclick="openRoleModal(' + u.id + ')">✏️ Role</button>' +
                                     '<button class="btn-table-action" onclick="toggleUserStatus(' + u.id + ')">' + (u.active ? '🚫 Deactivate' : '✅ Activate') + '</button>' +
                                 '</td>' +
@@ -435,23 +514,25 @@
                     document.getElementById('count-users').innerText = total;
 
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="color: var(--danger);">Failed to load users. Session expired.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="color: var(--danger);">Failed to load users. Session expired.</td></tr>';
                 }
             } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="5" style="color: var(--danger);">Network error contacting server.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="color: var(--danger);">Network error contacting server.</td></tr>';
             }
         }
 
-        async function sendOnboardingEmail(userId, username) {
+        async function sendOnboardingEmail(userId, staffName) {
             try {
                 var res = await fetch('api/users/' + userId + '/send-email', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (res.ok) {
-                    alert('📧 Onboarding Invitation Email Dispatched Successfully to ' + username + '!');
+                    var data = await res.json();
+                    alert('📧 ' + (data.message || 'Onboarding email dispatched successfully to ' + staffName + '!'));
                 } else {
-                    alert('Failed to send onboarding email.');
+                    var errData = await res.json();
+                    alert('Failed to send onboarding email: ' + (errData.message || 'Server error.'));
                 }
             } catch (err) {
                 alert('Network error sending onboarding email.');
@@ -525,9 +606,14 @@
 
         document.getElementById('register-user-form').addEventListener('submit', async function(e) {
             e.preventDefault();
+            var fullName = document.getElementById('new-fullname').value;
             var username = document.getElementById('new-username').value;
-            var password = document.getElementById('new-password').value;
+            var email = document.getElementById('new-email').value;
+            var phone = document.getElementById('new-phone').value;
+            var department = document.getElementById('new-department').value;
             var role = document.getElementById('new-role').value;
+            var vendorId = (role === 'VENDOR_REP') ? document.getElementById('new-vendor-id').value : null;
+            var password = document.getElementById('new-password').value;
 
             try {
                 var res = await fetch('api/users', {
@@ -537,7 +623,12 @@
                         'Authorization': 'Bearer ' + token
                     },
                     body: JSON.stringify({
+                        fullName: fullName,
                         username: username,
+                        email: email,
+                        phone: phone,
+                        department: department,
+                        vendorId: vendorId,
                         password: password,
                         role: role
                     })
@@ -546,7 +637,7 @@
                 if (res.ok) {
                     closeRegisterUserModal();
                     loadUsers();
-                    alert('System User Registered Successfully with Role ' + role + '!');
+                    alert('Staff/Partner "' + fullName + '" Registered Successfully with Role ' + role + '! Click [📧 Send Email] to dispatch onboarding credentials.');
                 } else {
                     alert('Failed to register user: ' + await res.text());
                 }
@@ -580,6 +671,7 @@
 
         function openRegisterUserModal() {
             document.getElementById('user-modal').style.display = 'flex';
+            loadVendorsDropdown();
         }
 
         function closeRegisterUserModal() {
@@ -595,7 +687,10 @@
             document.getElementById('role-modal').style.display = 'none';
         }
 
-        window.addEventListener('load', loadUsers);
+        window.addEventListener('load', function() {
+            loadUsers();
+            loadVendorsDropdown();
+        });
     </script>
 </body>
 </html>

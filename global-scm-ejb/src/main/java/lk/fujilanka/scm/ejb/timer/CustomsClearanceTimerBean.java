@@ -7,17 +7,21 @@ import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.CustomsFiling;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Stateless
 public class CustomsClearanceTimerBean {
 
+    private static final Logger LOGGER = Logger.getLogger(CustomsClearanceTimerBean.class.getName());
+
     @PersistenceContext(unitName = "SCMPU")
     private EntityManager em;
 
-    // Declarative EJB Timer: Scans uninspected customs declarations every 15 minutes
-    @Schedule(minute = "*/15", hour = "*", persistent = false)
+    // Persistent Declarative EJB Timer: Demonstrates persistent timer support for Payara clustered environments
+    @Schedule(minute = "*/15", hour = "*", persistent = true)
     public void executeCustomsDeadlineScan() {
-        System.out.println("[EJB Timer - Customs Clearance]: Monitoring port clearance declarations...");
+        LOGGER.info("[Persistent EJB Timer - Customs Clearance]: Monitoring port clearance declarations...");
 
         try {
             List<CustomsFiling> pendingFilings = em.createQuery(
@@ -30,7 +34,7 @@ public class CustomsClearanceTimerBean {
                 em.persist(audit);
             }
         } catch (Exception e) {
-            System.err.println("CustomsClearanceTimerBean error: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "CustomsClearanceTimerBean execution error", e);
         }
     }
 }

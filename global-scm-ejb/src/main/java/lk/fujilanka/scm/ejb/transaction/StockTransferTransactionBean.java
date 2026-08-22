@@ -12,9 +12,13 @@ import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.InventoryItem;
 import lk.fujilanka.scm.core.exception.InsufficientStockException;
 import lk.fujilanka.scm.core.exception.ResourceNotFoundException;
+import lk.fujilanka.scm.core.exception.ScmBusinessException;
 import lk.fujilanka.scm.ejb.interceptor.binding.ExecutionPerformanceAudit;
 import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
 import lk.fujilanka.scm.ejb.local.StockTransferTransactionLocal;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * BMT Transaction Coordinator for Inter-Depot Warehouse Stock Transfers.
@@ -26,6 +30,8 @@ import lk.fujilanka.scm.ejb.local.StockTransferTransactionLocal;
 @TransactionManagement(TransactionManagementType.BEAN)
 public class StockTransferTransactionBean implements StockTransferTransactionLocal {
 
+    private static final Logger LOGGER = Logger.getLogger(StockTransferTransactionBean.class.getName());
+
     @PersistenceContext(unitName = "SCMPU")
     private EntityManager em;
 
@@ -34,6 +40,10 @@ public class StockTransferTransactionBean implements StockTransferTransactionLoc
 
     @Override
     public boolean executeStockTransfer(Long sourceItemId, Long targetItemId, int transferQuantity, String username) {
+        if (transferQuantity <= 0) {
+            throw new ScmBusinessException("Invalid transfer quantity. Transfer quantity must be greater than zero.");
+        }
+
         UserTransaction userTransaction = sessionContext.getUserTransaction();
 
         try {
@@ -68,17 +78,18 @@ public class StockTransferTransactionBean implements StockTransferTransactionLoc
             userTransaction.commit();
             return true;
 
-        } catch (InsufficientStockException | ResourceNotFoundException e) {
+        } catch (ScmBusinessException e) {
             throw e;
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error executing BMT stock transfer", e);
             try {
                 if (userTransaction != null) {
                     userTransaction.rollback();
                 }
             } catch (Exception ex) {
-                System.err.println("Error rolling back BMT stock transfer: " + ex.getMessage());
+                LOGGER.log(Level.SEVERE, "Error rolling back BMT stock transfer", ex);
             }
-            return false;
+            throw new ScmBusinessException("Failed to execute BMT stock transfer due to transaction failure: " + e.getMessage());
         }
     }
 }

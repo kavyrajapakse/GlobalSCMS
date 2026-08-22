@@ -1,24 +1,16 @@
 package lk.fujilanka.scm.web.resource;
 
+import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import lk.fujilanka.scm.core.dto.LoginRequest;
 import lk.fujilanka.scm.core.dto.AuthResponse;
-import lk.fujilanka.scm.core.util.JwtUtil;
-import lk.fujilanka.scm.core.security.SCMCallbackHandler;
-import lk.fujilanka.scm.core.security.SCMUserPrincipal;
-import lk.fujilanka.scm.core.security.SCMRolePrincipal;
-
-import jakarta.ejb.EJB;
+import lk.fujilanka.scm.core.dto.LoginRequest;
 import lk.fujilanka.scm.core.dto.RegisterRequest;
 import lk.fujilanka.scm.core.entity.User;
+import lk.fujilanka.scm.ejb.local.UserServiceLocal;
+import lk.fujilanka.scm.ejb.util.JwtUtil;
 
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
-import java.security.Principal;
-import java.util.HashSet;
 import java.util.Set;
 
 @Path("/auth")
@@ -27,7 +19,7 @@ import java.util.Set;
 public class AuthResource {
 
     @EJB
-    private lk.fujilanka.scm.ejb.local.UserServiceLocal userService;
+    private UserServiceLocal userService;
 
     @POST
     @Path("/login")
@@ -43,7 +35,8 @@ public class AuthResource {
         if (user != null) {
             Set<String> roles = userService.getUserRoles(user.getUsername());
             String token = JwtUtil.generateToken(user.getUsername(), roles);
-            return Response.ok(new AuthResponse(token, user.getUsername(), roles)).build();
+            boolean requiresChange = user.isRequiresPasswordChange();
+            return Response.ok(new AuthResponse(token, user.getUsername(), roles, requiresChange)).build();
         } else {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity("Invalid username or password.")
@@ -56,20 +49,19 @@ public class AuthResource {
     public Response register(RegisterRequest request) {
         if (request == null || request.getUsername() == null || request.getPassword() == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Username, password, and roles are required")
+                    .entity("Username and password are required.")
                     .build();
         }
 
         try {
-            Set<String> roles = request.getRoles() != null && !request.getRoles().isEmpty() 
-                                ? request.getRoles() 
-                                : Set.of("COORDINATOR");
+            // Enterprise Security Rule: Public self-registration ALWAYS locks to low-privilege VENDOR_REP role.
+            Set<String> roles = Set.of("VENDOR_REP");
 
             User user = userService.registerUser(request.getUsername(), request.getPassword(), roles);
             String token = JwtUtil.generateToken(user.getUsername(), roles);
 
             return Response.status(Response.Status.CREATED)
-                    .entity(new AuthResponse(token, user.getUsername(), roles))
+                    .entity(new AuthResponse(token, user.getUsername(), roles, false))
                     .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)

@@ -5,9 +5,12 @@ import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
-import lk.fujilanka.scm.core.util.JwtUtil;
+import lk.fujilanka.scm.ejb.util.JwtUtil;
+import lk.fujilanka.scm.web.exception.ErrorMessage;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -20,43 +23,59 @@ public class JwtRequestFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String path = requestContext.getUriInfo().getPath();
-        if (path.contains("auth/login") || path.contains("auth/register")) {
+        
+        // Unprotected Public Endpoints
+        if (path.contains("auth") || path.contains("health") || path.contains("metrics") || path.contains("users/change-password")) {
             return;
         }
 
         String authHeader = requestContext.getHeaderString("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-
-            if (JwtUtil.isValid(token)) {
-                DecodedJWT jwt = JwtUtil.parseToken(token);
-                final String username = JwtUtil.getUsername(jwt);
-                final Set<String> roles = JwtUtil.getRoles(jwt);
-
-                requestContext.setSecurityContext(new SecurityContext() {
-                    @Override
-                    public Principal getUserPrincipal() {
-                        return () -> username;
-                    }
-
-                    @Override
-                    public boolean isUserInRole(String role) {
-                        if (role == null || roles == null) return false;
-                        return roles.stream().anyMatch(r -> r.equalsIgnoreCase(role) || r.equalsIgnoreCase("ROLE_" + role));
-                    }
-
-                    @Override
-                    public boolean isSecure() {
-                        return requestContext.getSecurityContext().isSecure();
-                    }
-
-                    @Override
-                    public String getAuthenticationScheme() {
-                        return "BEARER";
-                    }
-                });
-            }
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            abortWithUnauthorized(requestContext, "Missing or malformed Authorization header. Bearer token required.");
+            return;
         }
+
+        String token = authHeader.substring(7);
+
+        if (!JwtUtil.isValid(token)) {
+            abortWithUnauthorized(requestContext, "Invalid or expired JWT authentication token. Please sign in again.");
+            return;
+        }
+
+        DecodedJWT jwt = JwtUtil.parseToken(token);
+        final String username = JwtUtil.getUsername(jwt);
+        final Set<String> roles = JwtUtil.getRoles(jwt);
+
+        requestContext.setSecurityContext(new SecurityContext() {
+            @Override
+            public Principal getUserPrincipal() {
+                return () -> username;
+            }
+
+            @Override
+            public boolean isUserInRole(String role) {
+                if (role == null || roles == null) return false;
+                return roles.stream().anyMatch(r -> r.equalsIgnoreCase(role) || r.equalsIgnoreCase("ROLE_" + role));
+            }
+
+            @Override
+            public boolean isSecure() {
+                return requestContext.getSecurityContext().isSecure();
+            }
+
+            @Override
+            public String getAuthenticationScheme() {
+                return "BEARER";
+            }
+        });
+    }
+
+    private void abortWithUnauthorized(ContainerRequestContext requestContext, String message) {
+        ErrorMessage err = new ErrorMessage(Response.Status.UNAUTHORIZED.getStatusCode(), "UNAUTHORIZED_ACCESS", message);
+        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
+                .entity(err)
+                .type(MediaType.APPLICATION_JSON)
+                .build());
     }
 }

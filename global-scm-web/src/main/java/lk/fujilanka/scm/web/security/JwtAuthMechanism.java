@@ -8,7 +8,7 @@ import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticat
 import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lk.fujilanka.scm.core.util.JwtUtil;
+import lk.fujilanka.scm.ejb.util.JwtUtil;
 
 import java.util.Set;
 
@@ -31,15 +31,6 @@ public class JwtAuthMechanism implements HttpAuthenticationMechanism {
                 DecodedJWT jwt = JwtUtil.parseToken(token);
                 String username = jwt.getSubject();
                 Set<String> roles = JwtUtil.getRoles(jwt);
-
-                if (roles.isEmpty() && username != null) {
-                    String u = username.toLowerCase();
-                    if (u.contains("admin")) roles = Set.of("ADMIN", "COORDINATOR");
-                    else if (u.contains("coordinator")) roles = Set.of("COORDINATOR");
-                    else if (u.contains("custom")) roles = Set.of("CUSTOMS_AGENT");
-                    else if (u.contains("warehouse")) roles = Set.of("WAREHOUSE_MANAGER");
-                    else if (u.contains("vendor")) roles = Set.of("VENDOR_REP");
-                }
 
                 return httpMessageContext.notifyContainerAboutLogin(username, roles);
             }
