@@ -6,7 +6,7 @@ import lk.fujilanka.scm.core.entity.InventoryItem;
 import lk.fujilanka.scm.core.entity.Role;
 import lk.fujilanka.scm.core.entity.Shipment;
 import lk.fujilanka.scm.core.entity.User;
-import lk.fujilanka.scm.ejb.bean.ShipmentServiceBean;
+import lk.fujilanka.scm.ejb.stateless.ShipmentServiceBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -87,3 +87,4 @@ class ShipmentServiceBeanTest {
         verify(em, times(1)).merge(shipment);
     }
 }
+

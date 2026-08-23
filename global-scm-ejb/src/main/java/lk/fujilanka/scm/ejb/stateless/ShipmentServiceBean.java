@@ -1,5 +1,7 @@
-package lk.fujilanka.scm.ejb.bean;
+package lk.fujilanka.scm.ejb.stateless;
 
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -10,6 +12,7 @@ import lk.fujilanka.scm.core.entity.AuditLog;
 import lk.fujilanka.scm.core.entity.InventoryItem;
 import lk.fujilanka.scm.core.entity.Shipment;
 import lk.fujilanka.scm.core.entity.User;
+import lk.fujilanka.scm.core.entity.Vendor;
 import lk.fujilanka.scm.core.exception.InsufficientStockException;
 import lk.fujilanka.scm.ejb.interceptor.binding.ExecutionPerformanceAudit;
 import lk.fujilanka.scm.ejb.interceptor.binding.ScmAuditLog;
@@ -17,12 +20,16 @@ import lk.fujilanka.scm.ejb.local.ShipmentServiceLocal;
 import lk.fujilanka.scm.ejb.remote.ShipmentServiceRemote;
 
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 @Stateless
 @ScmAuditLog
 @ExecutionPerformanceAudit
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ShipmentServiceBean implements ShipmentServiceLocal, ShipmentServiceRemote {
+
+    private static final Logger LOGGER = Logger.getLogger(ShipmentServiceBean.class.getName());
 
     @PersistenceContext(unitName = "SCMPU")
     private EntityManager em;
@@ -39,6 +46,19 @@ public class ShipmentServiceBean implements ShipmentServiceLocal, ShipmentServic
         }
 
         shipment.setCreatedBy(creator);
+
+        // Auto-resolve Vendor entity if vendorName is supplied
+        if (shipment.getVendor() == null && shipment.getVendorName() != null && !shipment.getVendorName().isBlank()) {
+            try {
+                List<Vendor> matched = em.createQuery("SELECT v FROM Vendor v WHERE LOWER(v.companyName) = LOWER(:name)", Vendor.class)
+                        .setParameter("name", shipment.getVendorName().trim())
+                        .getResultList();
+                if (!matched.isEmpty()) {
+                    shipment.setVendor(matched.get(0));
+                }
+            } catch (Exception ignore) {}
+        }
+
         em.persist(shipment);
 
         // Audit Log Entry (Automatic CMT persistence)
@@ -114,13 +134,33 @@ public class ShipmentServiceBean implements ShipmentServiceLocal, ShipmentServic
 
     @Override
     public List<Shipment> getShipmentsByVendor(Long vendorId) {
-        return em.createQuery("SELECT s FROM Shipment s WHERE s.vendor.id = :vendorId ORDER BY s.id DESC", Shipment.class)
+        String companyName = "";
+        try {
+            Vendor v = em.find(Vendor.class, vendorId);
+            if (v != null && v.getCompanyName() != null) {
+                companyName = v.getCompanyName();
+            }
+        } catch (Exception ignore) {}
+
+        return em.createQuery("SELECT s FROM Shipment s WHERE s.vendor.id = :vendorId OR (s.vendorName IS NOT NULL AND LOWER(s.vendorName) = LOWER(:companyName)) ORDER BY s.id DESC", Shipment.class)
                 .setParameter("vendorId", vendorId)
+                .setParameter("companyName", companyName)
                 .getResultList();
     }
 
     @Override
     public Shipment findById(Long id) {
         return em.find(Shipment.class, id);
+    }
+
+    @Override
+    @Asynchronous
+    public Future<String> calculateOptimalCorridorAsync(String origin, String destination) {
+        LOGGER.info("[ShipmentServiceBean]: Calculating optimal maritime shipping corridor asynchronously for " + origin + " -> " + destination);
+        
+        // Simulates heavy analytical geospatial calculation
+        String corridorResult = "Optimal Maritime Corridor [" + origin + " -> " + destination + "]: Distance: 3,840 NM, Safe Route via Malacca Strait, Fuel Efficiency: 94.2%";
+        
+        return new AsyncResult<>(corridorResult);
     }
 }

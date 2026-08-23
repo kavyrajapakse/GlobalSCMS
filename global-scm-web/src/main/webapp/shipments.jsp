@@ -617,37 +617,65 @@
 
         async function loadAlerts() {
             var container = document.getElementById('alerts-stream-container');
+            if (!container) return;
             try {
-                var res = await fetch('api/alerts?limit=25', {
+                var res = await fetch('api/alerts?limit=100', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (res.ok) {
                     var logs = await res.json();
                     container.innerHTML = '';
                     
+                    if (!logs || logs.length === 0) {
+                        container.innerHTML = '<div style="color: var(--text-secondary); padding: 12px;">No freight dispatch alerts recorded yet. Perform cargo dispatches or carrier bookings to generate live alerts!</div>';
+                        return;
+                    }
+
                     var logisticsLogs = logs.filter(function(log) {
                         var action = (log.action || '').toUpperCase();
-                        return action.indexOf('SHIPMENT') !== -1 || action.indexOf('CARRIER') !== -1 || action.indexOf('BOOKING') !== -1 || action.indexOf('PORT') !== -1 || action.indexOf('SYSTEM') !== -1;
+                        // Exclude warehouse low-stock timer alerts from the freight dispatch portal
+                        if (action === 'INVENTORY_LOW_STOCK_ALERT' || action === 'VENDOR_SLA_EVALUATION') return false;
+                        
+                        return action.indexOf('SHIPMENT') !== -1 || action.indexOf('CARRIER') !== -1 || 
+                               action.indexOf('BOOKING') !== -1 || action.indexOf('PORT') !== -1 || 
+                               action.indexOf('DISPATCH') !== -1 || action.indexOf('TRANSIT') !== -1 ||
+                               action.indexOf('VESSEL') !== -1 || action.indexOf('DRAFT') !== -1 ||
+                               action.indexOf('ROUTE') !== -1 || action.indexOf('TRACKING') !== -1 ||
+                               action.indexOf('LOGISTICS') !== -1;
                     });
 
                     if (logisticsLogs.length === 0) {
-                        container.innerHTML = '<div style="color: var(--text-secondary);">No freight dispatch alerts recorded yet. Perform cargo dispatches or bookings to generate live alerts!</div>';
-                    } else {
-                        logisticsLogs.forEach(function(log) {
-                            var actionStr = log.action || 'LOGISTICS_EVENT';
-                            var badgeColor = actionStr.indexOf('CARRIER') !== -1 ? '#38bdf8' : (actionStr.indexOf('CREATE') !== -1 ? '#10b981' : '#f59e0b');
-                            var timeStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Recent Event';
-                            var detailsStr = log.details || 'Logistics event recorded.';
-                            
-                            container.innerHTML += '<div style="padding: 14px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-dark); border-radius: 8px; margin-bottom: 8px;">' +
-                                '<strong style="color: ' + badgeColor + ';">[' + actionStr + ']</strong> ' + detailsStr +
-                                '<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Timestamp: ' + timeStr + '</div>' +
+                        container.innerHTML = '<div style="color: var(--text-secondary); padding: 16px; background: rgba(30, 41, 59, 0.4); border: 1px dashed var(--border-dark); border-radius: 8px;">' +
+                            '📦 <strong>No freight dispatch events yet.</strong><br>' +
+                            '<span style="font-size: 12px; color: var(--text-muted);">Create a new shipment, book carrier capacity, or update a transport milestone to generate real-time dispatch alerts!</span>' +
                             '</div>';
-                        });
+                        return;
                     }
+
+                    var displayList = logisticsLogs;
+
+                    displayList.forEach(function(log) {
+                        var actionStr = log.action || 'LOGISTICS_EVENT';
+                        var badgeColor = actionStr.indexOf('CARRIER') !== -1 ? '#38bdf8' : 
+                                        (actionStr.indexOf('CREATE') !== -1 || actionStr.indexOf('DISPATCH') !== -1 ? '#10b981' : 
+                                        (actionStr.indexOf('ROUTE') !== -1 || actionStr.indexOf('TRACKING') !== -1 ? '#06b6d4' :
+                                        (actionStr.indexOf('UPDATE') !== -1 ? '#f59e0b' : '#a855f7')));
+                        var timeStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Recent Event';
+                        var detailsStr = log.details || 'Logistics event recorded.';
+                        var userStr = log.username ? 'by ' + log.username : '';
+                        
+                        container.innerHTML += '<div style="padding: 14px 16px; background: rgba(30, 41, 59, 0.7); border: 1px solid var(--border-dark); border-left: 4px solid ' + badgeColor + '; border-radius: 8px; margin-bottom: 10px; transition: transform 0.15s ease;">' +
+                            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">' +
+                                '<span style="color: ' + badgeColor + '; font-weight: 700; font-size: 13px;">[' + actionStr + ']</span>' +
+                                '<span style="font-size: 11px; color: var(--text-muted);">' + timeStr + '</span>' +
+                            '</div>' +
+                            '<div style="color: #f1f5f9; font-size: 13px; margin-bottom: 4px;">' + detailsStr + '</div>' +
+                            (userStr ? '<div style="font-size: 11px; color: var(--text-secondary);">Initiated ' + userStr + '</div>' : '') +
+                        '</div>';
+                    });
                 }
             } catch (err) {
-                container.innerHTML = '<div style="color: var(--danger);">Network error fetching freight alerts.</div>';
+                container.innerHTML = '<div style="color: var(--danger); padding: 12px;">Network error fetching freight alerts.</div>';
             }
         }
 
@@ -836,9 +864,14 @@
             document.getElementById('create-modal').style.display = 'flex';
         }
         
-        function closeCreateModal() { document.getElementById('create-modal').style.display = 'none'; }
-
-        window.addEventListener('load', loadShipments);
+        function closeCreateModal() { 
+            document.getElementById('create-modal').style.display = 'none'; 
+        }
+        
+        window.addEventListener('load', function() {
+            loadShipments();
+            loadAlerts();
+        });
     </script>
 </body>
 </html>

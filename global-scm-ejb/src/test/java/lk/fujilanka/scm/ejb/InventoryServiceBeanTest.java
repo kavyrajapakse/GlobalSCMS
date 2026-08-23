@@ -3,7 +3,7 @@ package lk.fujilanka.scm.ejb;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lk.fujilanka.scm.core.entity.InventoryItem;
-import lk.fujilanka.scm.ejb.bean.InventoryServiceBean;
+import lk.fujilanka.scm.ejb.stateless.InventoryServiceBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -88,3 +88,4 @@ class InventoryServiceBeanTest {
         assertEquals("SKU-WH-102", lowStock.get(0).getSku());
     }
 }
+

@@ -1,4 +1,4 @@
-package lk.fujilanka.scm.ejb.bean;
+package lk.fujilanka.scm.ejb.stateless;
 
 import jakarta.ejb.Stateless;
 import jakarta.mail.*;
@@ -15,12 +15,12 @@ public class EmailNotificationServiceBean implements EmailNotificationServiceLoc
 
     private static final Logger LOGGER = Logger.getLogger(EmailNotificationServiceBean.class.getName());
 
-    // Resolve credentials dynamically from Environment Variables with safe fallback
+    // Resolve credentials dynamically from Environment Variables or System Properties
     private static final String SMTP_USER = System.getenv().getOrDefault("SCM_SMTP_USER", 
-            System.getProperty("scm.smtp.user", "tashiyajay0@gmail.com"));
+            System.getProperty("scm.smtp.user", "no-reply.globalscm@gmail.com"));
             
     private static final String SMTP_PASS = System.getenv().getOrDefault("SCM_SMTP_PASS", 
-            System.getProperty("scm.smtp.pass", "tgqxioxbjagfgttz"));
+            System.getProperty("scm.smtp.pass", "your-app-password-here"));
 
     @Override
     public boolean sendOnboardingEmail(String recipientEmail, String username, String tempPassword) {
@@ -55,7 +55,7 @@ public class EmailNotificationServiceBean implements EmailNotificationServiceLoc
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SMTP_USER, "GlobalTrade SCM Portal Access"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
-            message.setSubject("🔑 Account Provisioned - GlobalTrade Enterprise SCM Access Details");
+            message.setSubject("ðŸ”‘ Account Provisioned - GlobalTrade Enterprise SCM Access Details");
 
             String htmlBody = "<!DOCTYPE html>"
                 + "<html>"
@@ -91,13 +91,13 @@ public class EmailNotificationServiceBean implements EmailNotificationServiceLoc
                 + "                </tr>"
                 + "              </table>"
                 + "              <div style='background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 4px; margin-bottom: 24px;'>"
-                + "                <strong style='color:#fbbf24; font-size:13px;'>⚠️ Mandatory First-Time Login Action:</strong>"
+                + "                <strong style='color:#fbbf24; font-size:13px;'>âš ï¸ Mandatory First-Time Login Action:</strong>"
                 + "                <div style='color:#cbd5e1; font-size:12px; margin-top:4px;'>For security compliance, you will be prompted to set your permanent password immediately upon your first sign-in.</div>"
                 + "              </div>"
                 + "              <table width='100%' cellpadding='0' cellspacing='0'>"
                 + "                <tr>"
                 + "                  <td align='center'>"
-                + "                    <a href='http://localhost:8080/global-scm-web/' style='display:inline-block; padding: 14px 28px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 15px rgba(37,99,235,0.4);'>Sign In & Set Permanent Password →</a>"
+                + "                    <a href='http://localhost:8080/global-scm-web/' style='display:inline-block; padding: 14px 28px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 15px rgba(37,99,235,0.4);'>Sign In & Set Permanent Password â†’</a>"
                 + "                  </td>"
                 + "                </tr>"
                 + "              </table>"
@@ -122,3 +122,4 @@ public class EmailNotificationServiceBean implements EmailNotificationServiceLoc
         }
     }
 }
+

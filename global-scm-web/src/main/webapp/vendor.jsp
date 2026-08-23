@@ -158,17 +158,18 @@
                 <h1>Vendor Representative & Supplier Portal</h1>
                 <p>Manage international supplier contracts, registered vendors, contract values, and SLA performance ratings.</p>
             </div>
-            <button class="btn-action-primary" onclick="openRegisterVendorModal()">+ Register New Vendor Partner</button>
+            <button id="btn-register-vendor" class="btn-action-primary" onclick="openRegisterVendorModal()">+ Register New Vendor Partner</button>
         </div>
 
         <!-- Sub-Feature Navigation Tabs -->
         <div class="sub-tabs">
-            <button class="tab-btn active" onclick="switchTab('vendors-tab', this)">🏢 Supplier Directory & Active Contracts</button>
-            <button class="tab-btn" onclick="switchTab('dispatches-tab', this)">📦 Vendor Dispatched Cargo</button>
-            <button class="tab-btn" onclick="switchTab('alerts-tab', this)">🔔 Vendor SLA Audit Stream</button>
+            <button id="tab-btn-directory" class="tab-btn active" onclick="switchTab('vendors-tab', this)">🏢 All Suppliers Directory</button>
+            <button id="tab-btn-profile" class="tab-btn" onclick="switchTab('profile-tab', this)">📋 Supplier Profile & MSA Contract</button>
+            <button id="tab-btn-dispatches" class="tab-btn" onclick="switchTab('dispatches-tab', this)">📦 Vendor Dispatched Cargo</button>
+            <button id="tab-btn-alerts" class="tab-btn" onclick="switchTab('alerts-tab', this)">🔔 Vendor SLA Audit Stream</button>
         </div>
 
-        <!-- Tab 1: Vendor Directory & Active Contracts Table -->
+        <!-- Tab 1: Vendor Directory & Active Contracts Table (Admin/Coordinator Only) -->
         <div id="vendors-tab" class="tab-content active">
             
             <!-- Top Metric Cards -->
@@ -243,6 +244,13 @@
             </div>
         </div>
 
+        <!-- Tab: Supplier Profile & MSA Contract -->
+        <div id="profile-tab" class="tab-content">
+            <div id="supplier-profile-container">
+                <div style="color: var(--text-secondary); padding: 24px; text-align: center;">Loading supplier profile & contract specifications...</div>
+            </div>
+        </div>
+
         <!-- Tab 2: Vendor Cargo Dispatches -->
         <div id="dispatches-tab" class="tab-content">
             <div class="panel">
@@ -251,7 +259,7 @@
                         <h3>📦 Vendor Dispatched Cargo</h3>
                         <p class="panel-desc" style="margin-bottom: 0;">Real-time ocean freight dispatches linked directly to registered vendor partners.</p>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                    <div id="filter-vendor-wrapper" style="display: flex; align-items: center; gap: 8px;">
                         <label style="font-size: 12px; color: var(--text-secondary);">Filter Vendor:</label>
                         <select id="filter-vendor-select" onchange="filterVendorDispatches()" style="padding: 6px 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-dark); border-radius: 6px; color: white; font-size: 13px;"></select>
                     </div>
@@ -389,14 +397,116 @@
 
         var currentVendorData = [];
         var allShipmentData = [];
+        var activeProfileVendor = null;
+        var loggedInUsername = localStorage.getItem('scm_username') || '';
+        var isVendorRep = roles.includes('VENDOR_REP') && !roles.includes('ADMIN') && !roles.includes('COORDINATOR');
 
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
             document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
             document.getElementById(tabId).classList.add('active');
-            btn.classList.add('active');
+            if (btn) btn.classList.add('active');
             if (tabId === 'dispatches-tab') loadVendorDispatches();
             else if (tabId === 'alerts-tab') loadAlerts();
+            else if (tabId === 'profile-tab' && activeProfileVendor) renderSupplierProfile(activeProfileVendor);
+        }
+
+        function renderSupplierProfile(vendor) {
+            if (!vendor) return;
+            activeProfileVendor = vendor;
+            var container = document.getElementById('supplier-profile-container');
+            if (!container) return;
+
+            var contractNum = 'CON-' + (vendor.country ? vendor.country.substring(0,2).toUpperCase() : 'GL') + '-' + (9000 + vendor.id * 15);
+            var contractVal = 'Rs. ' + ((45 + vendor.id * 12)).toLocaleString() + ',000,000';
+            var slaRating = (vendor.complianceRating || 98.5).toFixed(1);
+            var countryFlag = vendor.country === 'Japan' ? '🇯🇵' : (vendor.country === 'Singapore' ? '🇸🇬' : '🇱🇰');
+
+            container.innerHTML = 
+                '<div style="background: rgba(30, 41, 59, 0.7); border: 1px solid var(--border-dark); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px;">' +
+                        '<div>' +
+                            '<div style="display: flex; align-items: center; gap: 10px;">' +
+                                '<span style="font-size: 28px;">' + countryFlag + '</span>' +
+                                '<h2 style="font-size: 22px; font-weight: 700; color: #f8fafc; margin: 0;">' + vendor.companyName + '</h2>' +
+                                '<span class="pill pill-green" style="font-size: 11px;">● Verified Trade Partner</span>' +
+                            '</div>' +
+                            '<p style="font-size: 13px; color: var(--text-secondary); margin: 6px 0 0 0;">Authorized B2B Supplier Organization | Global Supply Chain Network</p>' +
+                        '</div>' +
+                        '<div style="display: flex; gap: 10px;">' +
+                            '<button class="btn-table-action" style="padding: 8px 14px; font-size: 12px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" onclick="filterDispatchesForVendor(\'' + vendor.companyName + '\')">📦 View Dispatches</button>' +
+                            '<button class="btn-table-action" style="padding: 8px 14px; font-size: 12px;" onclick="switchTab(\'alerts-tab\', document.getElementById(\'tab-btn-alerts\'))">🔔 SLA Telemetry</button>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<!-- 4 Top KPIs for Vendor -->' +
+                    '<div class="stats-grid" style="margin-bottom: 24px;">' +
+                        '<div class="stat-card" style="background: rgba(15, 23, 42, 0.6);">' +
+                            '<div class="stat-title">Composite SLA Rating</div>' +
+                            '<div class="stat-value" style="color: var(--success);">' + slaRating + '%</div>' +
+                            '<div class="stat-sub">Class-A Verified Supplier</div>' +
+                        '</div>' +
+                        '<div class="stat-card" style="background: rgba(15, 23, 42, 0.6);">' +
+                            '<div class="stat-title">Master Contract ID</div>' +
+                            '<div class="stat-value" style="color: var(--brand-accent); font-size: 18px; line-height: 32px;">' + contractNum + '</div>' +
+                            '<div class="stat-sub">Active through Dec 2026</div>' +
+                        '</div>' +
+                        '<div class="stat-card" style="background: rgba(15, 23, 42, 0.6);">' +
+                            '<div class="stat-title">Annual Allocation Value</div>' +
+                            '<div class="stat-value" style="color: #f59e0b; font-size: 20px; line-height: 32px;">' + contractVal + '</div>' +
+                            '<div class="stat-sub">B2B Trade Agreement</div>' +
+                        '</div>' +
+                        '<div class="stat-card" style="background: rgba(15, 23, 42, 0.6);">' +
+                            '<div class="stat-title">Trade Tax ID</div>' +
+                            '<div class="stat-value" style="color: #a855f7; font-size: 18px; line-height: 32px;">' + vendor.taxId + '</div>' +
+                            '<div class="stat-sub">Customs HS Registered</div>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<!-- 2 Column Profile Panels -->' +
+                    '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">' +
+                        '<div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-dark); border-radius: 8px; padding: 18px;">' +
+                            '<h4 style="margin: 0 0 14px 0; color: #38bdf8; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">📋 Corporate & Authentication Data</h4>' +
+                            '<div style="font-size: 13px; line-height: 2; color: #cbd5e1;">' +
+                                '<div><strong>Legal Corporate Entity:</strong> ' + vendor.companyName + '</div>' +
+                                '<div><strong>Country of Registration:</strong> ' + (vendor.country || 'Global') + '</div>' +
+                                '<div><strong>Operations Contact Email:</strong> <span style="color: var(--brand-accent);">' + vendor.contactEmail + '</span></div>' +
+                                '<div><strong>Emergency Dispatch Phone:</strong> ' + (vendor.phone || '+94 77 555 6677') + '</div>' +
+                                '<div><strong>Linked User Representative:</strong> ' + (loggedInUsername || 'Supplier Rep') + ' (' + (roles[0] || 'VENDOR_REP') + ')</div>' +
+                            '</div>' +
+                        '</div>' +
+
+                        '<div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-dark); border-radius: 8px; padding: 18px;">' +
+                            '<h4 style="margin: 0 0 14px 0; color: var(--success); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">📊 4-Factor SLA Quality Breakdown</h4>' +
+                            '<div style="font-size: 13px; color: #cbd5e1;">' +
+                                '<div style="margin-bottom: 10px;">' +
+                                    '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>On-Time Vessel Dispatch:</span><strong style="color: var(--success);">99.1%</strong></div>' +
+                                    '<div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;"><div style="width: 99.1%; height: 100%; background: var(--success);"></div></div>' +
+                                '</div>' +
+                                '<div style="margin-bottom: 10px;">' +
+                                    '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Cargo Safety & Inspection Integrity:</span><strong style="color: var(--success);">98.8%</strong></div>' +
+                                    '<div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;"><div style="width: 98.8%; height: 100%; background: var(--success);"></div></div>' +
+                                '</div>' +
+                                '<div style="margin-bottom: 10px;">' +
+                                    '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Customs Tariff Clearance Rate:</span><strong style="color: var(--brand-accent);">97.6%</strong></div>' +
+                                    '<div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;"><div style="width: 97.6%; height: 100%; background: var(--brand-accent);"></div></div>' +
+                                '</div>' +
+                                '<div>' +
+                                    '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Port Berth Turnaround SLA:</span><strong style="color: var(--success);">98.4%</strong></div>' +
+                                    '<div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;"><div style="width: 98.4%; height: 100%; background: var(--success);"></div></div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        function viewVendorProfileTab(vendorId) {
+            var vendor = currentVendorData.find(function(v) { return v.id === vendorId; });
+            if (vendor) {
+                renderSupplierProfile(vendor);
+                switchTab('profile-tab', document.getElementById('tab-btn-profile'));
+            }
         }
 
         async function loadVendors() {
@@ -436,7 +546,7 @@
                                 '<td><span class="pill pill-green">' + rating.toFixed(1) + '% SLA</span></td>' +
                                 '<td><span class="pill pill-blue">' + statusStr + '</span></td>' +
                                 '<td>' +
-                                    '<button class="btn-table-action" onclick="openViewVendorModal(' + v.id + ')">👁 View</button>' +
+                                    '<button class="btn-table-action" onclick="viewVendorProfileTab(' + v.id + ')">🏢 Profile</button>' +
                                     '<button class="btn-table-action" onclick="filterDispatchesForVendor(\'' + v.companyName + '\')">📦 Cargo</button>' +
                                 '</td>' +
                             '</tr>';
@@ -448,6 +558,32 @@
                     if (total > 0) {
                         var avgSla = (slaSum / total).toFixed(1);
                         document.getElementById('avg-sla').innerText = avgSla + '%';
+                    }
+
+                    // Role-Based UI Segregation & Profile Selection
+                    if (isVendorRep) {
+                        // External Supplier REP: Hide competitor directory & add button
+                        if (document.getElementById('btn-register-vendor')) document.getElementById('btn-register-vendor').style.display = 'none';
+                        if (document.getElementById('tab-btn-directory')) document.getElementById('tab-btn-directory').style.display = 'none';
+                        if (document.getElementById('tab-btn-profile')) document.getElementById('tab-btn-profile').innerText = '🏢 My Supplier Profile & MSA Contract';
+                        if (document.getElementById('tab-btn-dispatches')) document.getElementById('tab-btn-dispatches').innerText = '📦 My Dispatched Cargo';
+                        if (document.getElementById('tab-btn-alerts')) document.getElementById('tab-btn-alerts').innerText = '🔔 My SLA Quality Stream';
+                        if (document.getElementById('filter-vendor-wrapper')) document.getElementById('filter-vendor-wrapper').style.display = 'none';
+
+                        // Resolve logged-in vendor's company
+                        var myVendor = currentVendorData.find(function(v) {
+                            return (loggedInUsername === 'vendor' && v.companyName.toLowerCase().indexOf('fuji') !== -1) ||
+                                   (loggedInUsername === 'vendor3' && v.companyName.toLowerCase().indexOf('apex') !== -1) ||
+                                   (v.contactEmail && v.contactEmail.toLowerCase().indexOf(loggedInUsername.toLowerCase()) !== -1);
+                        }) || currentVendorData[0];
+
+                        renderSupplierProfile(myVendor);
+                        switchTab('profile-tab', document.getElementById('tab-btn-profile'));
+                    } else {
+                        // Admin / Coordinator: Full directory view
+                        if (!activeProfileVendor && currentVendorData.length > 0) {
+                            renderSupplierProfile(currentVendorData[0]);
+                        }
                     }
 
                 } else {
@@ -469,17 +605,36 @@
                 if (res.ok) {
                     allShipmentData = await res.json();
                     
-                    // Populate filter dropdown
-                    select.innerHTML = '<option value="ALL">All Registered Vendors</option>';
-                    var vendorSet = new Set();
+                    // Populate filter dropdown with All Registered Vendors
+                    var currentVal = select.value || 'ALL';
+                    select.innerHTML = '<option value="ALL">🌐 All Registered Vendors (' + allShipmentData.length + ' Total)</option>';
+                    
+                    // Use all registered vendors if available, else derive from shipments
+                    var vendorNames = new Set();
+                    if (currentVendorData && currentVendorData.length > 0) {
+                        currentVendorData.forEach(function(v) { if (v.companyName) vendorNames.add(v.companyName); });
+                    }
                     allShipmentData.forEach(function(item) {
-                        if (item.vendorName) vendorSet.add(item.vendorName);
-                    });
-                    vendorSet.forEach(function(vName) {
-                        select.innerHTML += '<option value="' + vName + '">' + vName + '</option>';
+                        if (item.vendorName) vendorNames.add(item.vendorName);
                     });
 
-                    renderDispatchesTable(allShipmentData);
+                    vendorNames.forEach(function(vName) {
+                        var count = allShipmentData.filter(function(s) {
+                            var sName = s.vendorName || (s.vendor ? s.vendor.companyName : '');
+                            return sName.toLowerCase() === vName.toLowerCase();
+                        }).length;
+                        select.innerHTML += '<option value="' + vName + '">' + vName + ' (' + count + ' ' + (count === 1 ? 'dispatch' : 'dispatches') + ')</option>';
+                    });
+
+                    if (vendorNames.has(currentVal)) {
+                        select.value = currentVal;
+                    } else {
+                        select.value = 'ALL';
+                    }
+
+                    filterVendorDispatches();
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="color: var(--danger);">Failed to load shipments. Session expired.</td></tr>';
                 }
             } catch (err) {
                 tbody.innerHTML = '<tr><td colspan="6" style="color: var(--danger);">Network error fetching dispatches.</td></tr>';
@@ -487,12 +642,16 @@
         }
 
         function filterVendorDispatches() {
-            var selectedVendor = document.getElementById('filter-vendor-select').value;
-            if (selectedVendor === 'ALL') {
-                renderDispatchesTable(allShipmentData);
+            var select = document.getElementById('filter-vendor-select');
+            var selectedVendor = select ? select.value : 'ALL';
+            if (!selectedVendor || selectedVendor === 'ALL') {
+                renderDispatchesTable(allShipmentData, 'All Registered Vendors');
             } else {
-                var filtered = allShipmentData.filter(function(s) { return s.vendorName === selectedVendor; });
-                renderDispatchesTable(filtered);
+                var filtered = allShipmentData.filter(function(s) {
+                    var sName = s.vendorName || (s.vendor ? s.vendor.companyName : '');
+                    return sName.toLowerCase() === selectedVendor.toLowerCase();
+                });
+                renderDispatchesTable(filtered, selectedVendor);
             }
         }
 
@@ -504,20 +663,31 @@
                     select.value = vendorName;
                     filterVendorDispatches();
                 }
-            }, 300);
+            }, 100);
         }
 
-        function renderDispatchesTable(data) {
+        function resetDispatchFilter() {
+            var select = document.getElementById('filter-vendor-select');
+            if (select) select.value = 'ALL';
+            filterVendorDispatches();
+        }
+
+        function renderDispatchesTable(data, vendorContext) {
             var tbody = document.getElementById('dispatches-table-body');
             tbody.innerHTML = '';
             
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="color: var(--text-secondary);">No cargo dispatches found for selected vendor partner.</td></tr>';
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: var(--text-secondary);">' +
+                    '📦 <strong>No cargo dispatches found for ' + (vendorContext || 'this vendor') + '.</strong><br>' +
+                    '<button onclick="resetDispatchFilter()" class="btn-table-action" style="margin-top: 10px; font-size: 12px;">🌐 View All Cargo Dispatches</button>' +
+                    '</td></tr>';
             } else {
                 data.forEach(function(item) {
                     var rawCost = item.costLkr || item.costUSD || 0;
                     var costFormatted = rawCost ? rawCost.toLocaleString() : '0';
-                    var vName = item.vendorName || 'Lanka Freight Ltd';
+                    var vName = item.vendorName || (item.vendor ? item.vendor.companyName : 'Lanka Freight Ltd');
+                    var isDelivered = item.status === 'DELIVERED';
+                    var pillClass = isDelivered ? 'pill-green' : (item.status.indexOf('BOOKED') !== -1 ? 'pill-blue' : 'pill-yellow');
 
                     tbody.innerHTML += '<tr>' +
                         '<td><strong style="color: var(--brand-accent);">' + vName + '</strong></td>' +
@@ -525,7 +695,7 @@
                         '<td>' + item.origin + ' ➔ ' + item.destination + '</td>' +
                         '<td><span class="pill pill-blue">' + (item.transportMode || 'OCEAN') + '</span></td>' +
                         '<td>Rs. ' + costFormatted + '</td>' +
-                        '<td><span class="pill pill-green">' + item.status + '</span></td>' +
+                        '<td><span class="pill ' + pillClass + '">' + item.status + '</span></td>' +
                     '</tr>';
                 });
             }
@@ -649,7 +819,10 @@
             document.getElementById('vendor-modal').style.display = 'none';
         }
 
-        window.addEventListener('load', loadVendors);
+        window.addEventListener('load', function() {
+            loadVendors();
+            loadVendorDispatches();
+        });
     </script>
 </body>
 </html>

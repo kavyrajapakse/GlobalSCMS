@@ -1,4 +1,4 @@
-package lk.fujilanka.scm.ejb.bean;
+package lk.fujilanka.scm.ejb.stateless;
 
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;

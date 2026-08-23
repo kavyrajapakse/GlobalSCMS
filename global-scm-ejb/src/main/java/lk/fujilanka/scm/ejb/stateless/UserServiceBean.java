@@ -1,4 +1,4 @@
-package lk.fujilanka.scm.ejb.bean;
+package lk.fujilanka.scm.ejb.stateless;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Stateless;
@@ -236,3 +236,4 @@ public class UserServiceBean implements UserServiceLocal {
         return updated;
     }
 }
+

@@ -5,7 +5,7 @@ import jakarta.persistence.TypedQuery;
 import lk.fujilanka.scm.core.entity.Role;
 import lk.fujilanka.scm.core.entity.User;
 import lk.fujilanka.scm.core.util.PasswordUtil;
-import lk.fujilanka.scm.ejb.bean.UserServiceBean;
+import lk.fujilanka.scm.ejb.stateless.UserServiceBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -110,3 +110,4 @@ class UserServiceBeanTest {
         assertFalse(updated.isRequiresPasswordChange());
     }
 }
+

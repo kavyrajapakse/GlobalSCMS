@@ -453,6 +453,7 @@
 
                 if (res.ok) {
                     loadCustomsFilings();
+                    loadAlerts();
                     alert('Customs Declaration Updated to ' + newStatus + '! (Logistics Shipment Status automatically updated).');
                 } else {
                     var errObj = await res.json();
@@ -519,8 +520,9 @@
 
         async function loadAlerts() {
             var container = document.getElementById('alerts-stream-container');
+            if (!container) return;
             try {
-                var res = await fetch('api/alerts?limit=25', {
+                var res = await fetch('api/alerts?limit=200', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (res.ok) {
@@ -529,27 +531,39 @@
                     
                     var customsLogs = logs.filter(function(log) {
                         var action = (log.action || '').toUpperCase();
-                        return action.indexOf('PORT') !== -1 || action.indexOf('CUSTOMS') !== -1 || action.indexOf('CLEARANCE') !== -1;
+                        return action.indexOf('PORT') !== -1 || action.indexOf('CUSTOMS') !== -1 || 
+                               action.indexOf('CLEARANCE') !== -1 || action.indexOf('HOLD') !== -1 ||
+                               action.indexOf('DECLARATION') !== -1 || action.indexOf('TARIFF') !== -1;
                     });
 
-                    if (customsLogs.length === 0) {
-                        container.innerHTML = '<div style="color: var(--text-secondary);">No customs or port clearance event logs recorded yet. Approve declarations to generate logs!</div>';
+                    if (!customsLogs || customsLogs.length === 0) {
+                        container.innerHTML = '<div style="color: var(--text-secondary); padding: 16px; background: rgba(30, 41, 59, 0.4); border: 1px dashed var(--border-dark); border-radius: 8px;">' +
+                            '🛡️ <strong>No recent customs or port clearance event logs found.</strong><br>' +
+                            '<span style="font-size: 12px; color: var(--text-muted);">File a declaration or click "Approve / Release" on any filing to generate live port clearance event telemetry!</span>' +
+                            '</div>';
                     } else {
                         customsLogs.forEach(function(log) {
                             var actionStr = log.action || 'CUSTOMS_EVENT';
-                            var badgeColor = actionStr.indexOf('APPROVED') !== -1 ? '#10b981' : '#f59e0b';
+                            var isApproved = actionStr.indexOf('APPROVED') !== -1 || actionStr.indexOf('CLEARED') !== -1;
+                            var isHold = actionStr.indexOf('HOLD') !== -1 || actionStr.indexOf('REJECTED') !== -1;
+                            var badgeColor = isApproved ? '#10b981' : (isHold ? '#ef4444' : '#38bdf8');
                             var timeStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Recent Event';
                             var detailsStr = log.details || 'Port clearance transaction logged.';
+                            var userStr = log.username ? 'by Agent ' + log.username : '';
                             
-                            container.innerHTML += '<div style="padding: 14px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--border-dark); border-radius: 8px; margin-bottom: 8px;">' +
-                                '<strong style="color: ' + badgeColor + ';">[' + actionStr + ']</strong> ' + detailsStr +
-                                '<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Timestamp: ' + timeStr + '</div>' +
+                            container.innerHTML += '<div style="padding: 14px 16px; background: rgba(30, 41, 59, 0.7); border: 1px solid var(--border-dark); border-left: 4px solid ' + badgeColor + '; border-radius: 8px; margin-bottom: 10px;">' +
+                                '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">' +
+                                    '<span style="color: ' + badgeColor + '; font-weight: 700; font-size: 13px;">[' + actionStr + ']</span>' +
+                                    '<span style="font-size: 11px; color: var(--text-muted);">' + timeStr + '</span>' +
+                                '</div>' +
+                                '<div style="color: #f1f5f9; font-size: 13px; margin-bottom: 4px;">' + detailsStr + '</div>' +
+                                (userStr ? '<div style="font-size: 11px; color: var(--text-secondary);">' + userStr + '</div>' : '') +
                             '</div>';
                         });
                     }
                 }
             } catch (err) {
-                container.innerHTML = '<div style="color: var(--danger);">Network error fetching customs alerts.</div>';
+                container.innerHTML = '<div style="color: var(--danger); padding: 12px;">Network error fetching customs alerts.</div>';
             }
         }
 
@@ -572,6 +586,7 @@
                 if (res.ok) {
                     closeFileDeclarationModal();
                     loadCustomsFilings();
+                    loadAlerts();
                     alert('Customs Clearance Declaration Filed Successfully!');
                 } else {
                     alert('Failed to file customs declaration: ' + await res.text());
@@ -592,8 +607,12 @@
 
         window.addEventListener('load', function() {
             loadCustomsFilings();
+            loadAlerts();
             // 10-Second Live Polling Interval for Port Clearance
-            setInterval(loadCustomsFilings, 10000);
+            setInterval(function() {
+                loadCustomsFilings();
+                loadAlerts();
+            }, 10000);
         });
     </script>
 </body>
