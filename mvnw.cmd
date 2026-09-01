@@ -3,19 +3,23 @@
 @REM ----------------------------------------------------------------------------
 
 @if "%DEBUG%" == "" @echo off
-@classprocessor -version >nul 2>&1
+setlocal enabledelayedexpansion
 
 set ERROR_CODE=0
-set MAVEN_PROJECTBASEDIR=%~dp0
+set MAVEN_CMD=mvn
 
-if not "%MAVEN_PROJECTBASEDIR%" == "" goto OkBaseDir
-set MAVEN_PROJECTBASEDIR=.
-:OkBaseDir
+@REM Check if mvn is available in system PATH
+where mvn >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    @REM Search for IntelliJ IDEA bundled Maven
+    for /d %%D in ("C:\Program Files\JetBrains\IntelliJ IDEA*") do (
+        if exist "%%D\plugins\maven\lib\maven3\bin\mvn.cmd" (
+            set "MAVEN_CMD=%%D\plugins\maven\lib\maven3\bin\mvn.cmd"
+        )
+    )
+)
 
-set MAVEN_CONFIG=.mvn
-
-@REM Execute Maven
-mvn %*
+"%MAVEN_CMD%" %*
 
 if ERRORLEVEL 1 goto error
 goto end
