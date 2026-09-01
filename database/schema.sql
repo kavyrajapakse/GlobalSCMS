@@ -174,13 +174,14 @@ INSERT INTO `vendors` (`id`, `company_name`, `contact_email`, `phone`, `country`
 	(4, 'Fuji Lanka', 'fujilanka@gmail.com', '+94778945226', 'Sri Lanka', 'TAX-2303', 98.5, 'ACTIVE')
 ON DUPLICATE KEY UPDATE `company_name`=VALUES(`company_name`);
 
--- Users (Default Accounts)
+-- Users (Default Enterprise Accounts with Salted SHA-256 Hashes)
+-- Passwords: 'admin' -> 'admin123' | All other staff -> 'pass123'
 INSERT INTO `users` (`ID`, `USERNAME`, `full_name`, `email`, `phone`, `department`, `password_hash`, `ACTIVE`, `requires_password_change`, `vendor_id`) VALUES
-	(1, 'warehouse', 'Ruwan Fernando', 'kavithmarajapakse03@gmail.com', '+94 70 444 5566', 'Depot & Stock Management', 'pass123', 1, 0, NULL),
-	(2, 'coordinator', 'Nimal Perera', 'kavithmarajapakse03@gmail.com', '+94 71 222 3344', 'Ocean Freight & Logistics', 'pass123', 1, 0, NULL),
-	(3, 'custom', 'Sunil Jayawardena', 'kavithmarajapakse03@gmail.com', '+94 76 333 4455', 'Port Customs Compliance', 'pass123', 1, 0, NULL),
-	(4, 'vendor', 'Fuji Lanka Supplier Rep', 'kavithmarajapakse03@gmail.com', '+94 77 555 6677', 'Supplier & Vendor Relations', 'pass123', 1, 0, 4),
-	(5, 'admin', 'Kavithma Rajapakse', 'kavithmarajapakse03@gmail.com', '+94 77 111 2233', 'Executive Administration', 'admin123', 1, 0, NULL)
+	(1, 'warehouse', 'Ruwan Fernando', 'kavithmarajapakse03@gmail.com', '+94 70 444 5566', 'Depot & Stock Management', 'DRonNEFOW2h1go+cqbbD0A==$sSXXHaAms5exnMZcVU3yR22wb6yYNLk8O1TFCkNFVkg=', 1, 0, NULL),
+	(2, 'coordinator', 'Nimal Perera', 'kavithmarajapakse03@gmail.com', '+94 71 222 3344', 'Ocean Freight & Logistics', 'DRonNEFOW2h1go+cqbbD0A==$sSXXHaAms5exnMZcVU3yR22wb6yYNLk8O1TFCkNFVkg=', 1, 0, NULL),
+	(3, 'custom', 'Sunil Jayawardena', 'kavithmarajapakse03@gmail.com', '+94 76 333 4455', 'Port Customs Compliance', 'DRonNEFOW2h1go+cqbbD0A==$sSXXHaAms5exnMZcVU3yR22wb6yYNLk8O1TFCkNFVkg=', 1, 0, NULL),
+	(4, 'vendor', 'Fuji Lanka Supplier Rep', 'kavithmarajapakse03@gmail.com', '+94 77 555 6677', 'Supplier & Vendor Relations', 'DRonNEFOW2h1go+cqbbD0A==$sSXXHaAms5exnMZcVU3yR22wb6yYNLk8O1TFCkNFVkg=', 1, 0, 4),
+	(5, 'admin', 'Kavithma Rajapakse', 'kavithmarajapakse03@gmail.com', '+94 77 111 2233', 'Executive Administration', 'Bw4VHCMqMTg/Rk1UW2JpcA==$qmJfUoKrehEwIpoQRvmQb4PMlSB946aca3Vi2gfB6PI=', 1, 0, NULL)
 ON DUPLICATE KEY UPDATE `USERNAME`=VALUES(`USERNAME`);
 
 -- User Roles
