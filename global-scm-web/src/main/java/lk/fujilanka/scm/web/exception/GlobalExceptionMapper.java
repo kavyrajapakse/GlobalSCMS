@@ -41,6 +41,21 @@ public class GlobalExceptionMapper implements ExceptionMapper<Throwable> {
             return Response.status(Response.Status.BAD_REQUEST).entity(err).type(MediaType.APPLICATION_JSON).build();
         }
 
+        // Security, EJB Access and Role Authorization Violations (Maps to 403 FORBIDDEN)
+        if (exception instanceof jakarta.ejb.EJBAccessException ||
+            exception instanceof jakarta.ws.rs.ForbiddenException ||
+            exception instanceof SecurityException ||
+            (exception.getMessage() != null && (
+                exception.getMessage().toLowerCase().contains("caller not in requested role") ||
+                exception.getMessage().toLowerCase().contains("access is denied") ||
+                exception.getMessage().toLowerCase().contains("forbidden") ||
+                exception.getMessage().toLowerCase().contains("not authorized")
+            ))) {
+            ErrorMessage err = new ErrorMessage(Response.Status.FORBIDDEN.getStatusCode(), "FORBIDDEN_ACCESS", 
+                "Forbidden: Insufficient privileges. You do not possess the required security role for this resource.");
+            return Response.status(Response.Status.FORBIDDEN).entity(err).type(MediaType.APPLICATION_JSON).build();
+        }
+
         // Generic Fallback Exception Response (Prevents 500 HTML pages)
         ErrorMessage err = new ErrorMessage(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "INTERNAL_SERVER_ERROR", 
             exception.getMessage() != null ? exception.getMessage() : "An unexpected server error occurred.");

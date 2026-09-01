@@ -15,12 +15,12 @@ public class EmailNotificationServiceBean implements EmailNotificationServiceLoc
 
     private static final Logger LOGGER = Logger.getLogger(EmailNotificationServiceBean.class.getName());
 
-    // Resolve credentials dynamically from Environment Variables or System Properties
+    // SMTP Credentials for Live Google Cloud TLS Onboarding Delivery
     private static final String SMTP_USER = System.getenv().getOrDefault("SCM_SMTP_USER", 
-            System.getProperty("scm.smtp.user", "no-reply.globalscm@gmail.com"));
+            System.getProperty("scm.smtp.user", "tashiyajay0@gmail.com"));
             
     private static final String SMTP_PASS = System.getenv().getOrDefault("SCM_SMTP_PASS", 
-            System.getProperty("scm.smtp.pass", "your-app-password-here"));
+            System.getProperty("scm.smtp.pass", "tgqxioxbjagfgttz"));
 
     @Override
     public boolean sendOnboardingEmail(String recipientEmail, String username, String tempPassword) {

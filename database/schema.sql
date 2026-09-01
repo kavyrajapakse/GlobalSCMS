@@ -160,6 +160,12 @@ INSERT INTO `roles` (`ID`, `name`) VALUES
 	(5, 'ADMIN')
 ON DUPLICATE KEY UPDATE `name`=VALUES(`name`);
 
+-- Warehouses
+INSERT INTO `warehouses` (`ID`, `NAME`, `location_code`, `capacity_units`) VALUES
+	(1, 'Colombo Central Logistics Depot', 'WH-CMB-01', 50000),
+	(2, 'Hambantota Deep Sea Terminal Depot', 'WH-HBT-02', 75000)
+ON DUPLICATE KEY UPDATE `NAME`=VALUES(`NAME`);
+
 -- Vendors
 INSERT INTO `vendors` (`id`, `company_name`, `contact_email`, `phone`, `country`, `tax_id`, `compliance_rating`, `status`) VALUES
 	(1, 'Lanka Freight Ltd', 'operations@lankafreight.lk', '+94 11 234 5678', 'Sri Lanka', 'TAX-LK-9021', 99.2, 'ACTIVE'),
@@ -186,12 +192,12 @@ INSERT IGNORE INTO `user_roles` (`user_id`, `role_id`) VALUES
 	(5, 5);
 
 -- Inventory Items
-INSERT INTO `inventory_items` (`ID`, `SKU`, `item_name`, `category`, `QUANTITY`, `min_threshold`, `unit_price_lkr`, `warehouse_location`, `status`, `version`, `vendor_id`) VALUES
-	(1, 'SKU-WH-101', 'Microcontroller Unit MCU-32', 'Semiconductors', 120, 30, 4500, 'Colombo Depot - Bin A1', 'IN_STOCK', 1, 1),
-	(2, 'SKU-WH-102', 'High-Capacity Lithium Battery 48V', 'Electronics', 15, 30, 85000, 'Colombo Depot - Bin B4', 'LOW_STOCK', 2, 1),
-	(3, 'SKU-WH-103', 'Industrial Fiber Optic Transceiver', 'Telecom', 118, 20, 32000, 'Hambantota Depot - Bin C2', 'IN_STOCK', 3, 1),
-	(4, 'SKU-WH-104', 'Stainless Steel Ocean Shipping Bracket', 'Hardware', 430, 50, 1250, 'Colombo Depot - Bin D1', 'IN_STOCK', 2, 1),
-	(5, 'SKU-WH-105', 'Industrial Timber Crate (Wood)', 'Furniture', 100, 30, 4500, 'Colombo Central Depot', 'IN_STOCK', 2, 1)
+INSERT INTO `inventory_items` (`ID`, `SKU`, `item_name`, `category`, `QUANTITY`, `min_threshold`, `unit_price_lkr`, `warehouse_location`, `status`, `version`, `warehouse_id`, `vendor_id`) VALUES
+	(1, 'SKU-WH-101', 'Microcontroller Unit MCU-32', 'Semiconductors', 120, 30, 4500, 'Colombo Depot - Bin A1', 'IN_STOCK', 1, 1, 1),
+	(2, 'SKU-WH-102', 'High-Capacity Lithium Battery 48V', 'Electronics', 15, 30, 85000, 'Colombo Depot - Bin B4', 'LOW_STOCK', 2, 1, 1),
+	(3, 'SKU-WH-103', 'Industrial Fiber Optic Transceiver', 'Telecom', 118, 20, 32000, 'Hambantota Depot - Bin C2', 'IN_STOCK', 3, 2, 1),
+	(4, 'SKU-WH-104', 'Stainless Steel Ocean Shipping Bracket', 'Hardware', 430, 50, 1250, 'Colombo Depot - Bin D1', 'IN_STOCK', 2, 1, 1),
+	(5, 'SKU-WH-105', 'Industrial Timber Crate (Wood)', 'Furniture', 100, 30, 4500, 'Colombo Central Depot', 'IN_STOCK', 2, 1, 1)
 ON DUPLICATE KEY UPDATE `SKU`=VALUES(`SKU`);
 
 -- Shipments

@@ -32,14 +32,22 @@ public class UserResource {
 
     @GET
     @RolesAllowed({"ADMIN"})
-    public Response getAllUsers() {
+    public Response getAllUsers(@Context SecurityContext sc) {
+        if (sc != null && !sc.isUserInRole("ADMIN")) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(Map.of("error", "Forbidden: Insufficient privileges for this role")).build();
+        }
         List<User> users = userService.getAllUsers();
         return Response.ok(users).build();
     }
 
     @POST
     @RolesAllowed({"ADMIN"})
-    public Response registerUser(Map<String, Object> payload) {
+    public Response registerUser(Map<String, Object> payload, @Context SecurityContext sc) {
+        if (sc != null && !sc.isUserInRole("ADMIN")) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(Map.of("error", "Forbidden: Insufficient privileges for this role")).build();
+        }
         String username = (String) payload.get("username");
         String fullName = (String) payload.get("fullName");
         String email = (String) payload.get("email");
